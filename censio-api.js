@@ -7,9 +7,9 @@
 // ============================================================
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-export const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
-export const SUPABASE_ANON_KEY = "YOUR-PUBLIC-ANON-KEY";
-export const WORKER_URL = "https://censio-api.YOUR-SUBDOMAIN.workers.dev";
+export const SUPABASE_URL = "https://khttsxgfwuxvzyzdtrno.supabase.co";
+export const SUPABASE_ANON_KEY = "sb_publishable_zTQSiruLouWFVufxw0n05w_e3KyBHtp";
+export const WORKER_URL = "https://censio-api.schan-b9e.workers.dev";
 
 export const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
