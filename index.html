@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'Manrope', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #f4f4f2; background: #0b0b0d; }
+  ::selection { background: #4a1713; color: #fff; }
+  @keyframes ivFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes ivPop { 0% { transform: translate(-50%,-100%) scale(0.4); opacity: 0; } 60% { transform: translate(-50%,-100%) scale(1.12); } 100% { transform: translate(-50%,-100%) scale(1); opacity: 1; } }
+  @keyframes ivPulse { 0% { box-shadow: 0 0 0 0 rgba(201,163,91,0.5); } 70% { box-shadow: 0 0 0 12px rgba(201,163,91,0); } 100% { box-shadow: 0 0 0 0 rgba(201,163,91,0); } }
+  textarea, input, button { font-family: inherit; }
+  textarea:focus, input:focus { outline: none; }
+  [data-scroll]::-webkit-scrollbar { width: 10px; height: 10px; }
+  [data-scroll]::-webkit-scrollbar-thumb { background: #3a3a41; border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; width: 100%; background: #0b0b0d;">
+
+  <!-- ============ LOGIN ============ -->
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height: 100vh; display: grid; grid-template-columns: 1.05fr 0.95fr;">
+      <div style="position: relative; overflow: hidden; background: radial-gradient(130% 130% at 18% 8%, #1c1213 0%, #0e0e10 55%, #070708 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 56px 56px 48px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <img src="assets/ivolve_logo_white.png" alt="Ivolve Studios" style="height: 21px; width: auto; display: block; opacity: 0.92;" />
+          <span style="display: inline-block; width: 1px; height: 30px; background: #2a2a30;"></span>
+          <span style="font-size: 31px; font-weight: 800; letter-spacing: -0.025em; color: #fff; line-height: 1;">Censio</span>
+        </div>
+        <div style="max-width: 460px;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.16em; color: #e2241c; margin-bottom: 20px;">CLIENT REVIEW &amp; MARKUP</div>
+          <h1 style="color: #fff; font-size: 44px; line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 20px;">Review the work. Mark it up. Sign it off.</h1>
+          <p style="color: #b4b4ba; font-size: 19px; line-height: 1.55; margin: 0; font-weight: 500;">One clear place for clients and consultants to review CGIs and videos, leave precise comments, and approve — without the learning curve.</p>
+        </div>
+        <div style="display: flex; gap: 28px; color: #7a7a80; font-size: 14px; font-weight: 600;">
+          <span>Secure access</span><span style="opacity: 0.4;">•</span><span>Version tracked</span><span style="opacity: 0.4;">•</span><span>AI conflict checks</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: center; padding: 48px; background: #131316;">
+        <div style="width: 100%; max-width: 420px;">
+          <h2 style="font-size: 30px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 8px;">{{ loginTitle }}</h2>
+          <p style="font-size: 17px; color: #a6a6ac; margin: 0 0 32px; line-height: 1.5; font-weight: 500;">{{ loginSubtitle }}</p>
+
+          <label style="display: block; font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #d2d2d7;">Email address</label>
+          <input type="email" value="d.chen@harlowarchitects.com" style="width: 100%; height: 54px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 0 16px; font-size: 17px; font-weight: 500; background: #1b1b1f; margin-bottom: 20px; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.12);" />
+
+          <label style="display: block; font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #d2d2d7;">{{ passwordLabel }}</label>
+          <input type="password" value="••••••••••" style="width: 100%; height: 54px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 0 16px; font-size: 17px; font-weight: 500; background: #1b1b1f; margin-bottom: 14px; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.12);" />
+
+          <sc-if value="{{ isFirstTime }}" hint-placeholder-val="{{ false }}">
+            <label style="display: block; font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #d2d2d7;">Confirm password</label>
+            <input type="password" value="••••••••••" style="width: 100%; height: 54px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 0 16px; font-size: 17px; font-weight: 500; background: #1b1b1f; margin-bottom: 14px; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.12);" />
+          </sc-if>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px;">
+            <span style="font-size: 15px; color: #a6a6ac; font-weight: 600;"> </span>
+            <a href="#" style="font-size: 15px; color: #e2241c; font-weight: 700; text-decoration: none;">Forgot password?</a>
+          </div>
+
+          <button onClick="{{ signIn }}" style="width: 100%; height: 56px; background: #e2241c; color: #fff; border: none; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(226,36,28,0.3);" style-hover="background: #be1a14;">{{ loginButton }}</button>
+
+          <button onClick="{{ toggleFirstTime }}" style="width: 100%; height: 50px; background: transparent; color: #a6a6ac; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px;">{{ firstTimeToggleLabel }}</button>
+
+          <div style="margin-top: 28px; padding-top: 24px; border-top: 1px solid #26262b; display: flex; gap: 10px;">
+            <button onClick="{{ enterAsTeam }}" style="flex: 1; height: 48px; background: #1b1b1f; color: #d2d2d7; border: 1.5px solid #2e2e34; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;" style-hover="border-color: #e2241c; color: #e2241c;">Ivolve Team Access</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ TEAM LOGIN ============ -->
+  <sc-if value="{{ isTeamLogin }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height: 100vh; display: grid; grid-template-columns: 1.05fr 0.95fr;">
+      <div style="position: relative; overflow: hidden; background: radial-gradient(130% 130% at 18% 8%, #1c1213 0%, #0e0e10 55%, #070708 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 56px 56px 48px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <img src="assets/ivolve_logo_white.png" alt="Ivolve Studios" style="height: 21px; width: auto; display: block; opacity: 0.92;" />
+          <span style="display: inline-block; width: 1px; height: 30px; background: #2a2a30;"></span>
+          <span style="font-size: 31px; font-weight: 800; letter-spacing: -0.025em; color: #fff; line-height: 1;">Censio</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 11px; letter-spacing: 0.18em; color: #e2241c; align-self: flex-end; margin-bottom: 5px;">TEAM</span>
+        </div>
+        <div style="max-width: 460px;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.16em; color: #e2241c; margin-bottom: 20px;">IVOLVE STUDIOS · TEAM WORKSPACE</div>
+          <h1 style="color: #fff; font-size: 44px; line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 20px;">Upload, assign and manage reviews.</h1>
+          <p style="color: #b4b4ba; font-size: 19px; line-height: 1.55; margin: 0; font-weight: 500;">Sign in to your team account to upload CGIs and videos. Administrators also manage projects, clients and access.</p>
+        </div>
+        <div style="display: flex; gap: 28px; color: #7a7a80; font-size: 14px; font-weight: 600;">
+          <span>Drag &amp; drop upload</span><span style="opacity: 0.4;">•</span><span>Version control</span><span style="opacity: 0.4;">•</span><span>Admin controls</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: center; padding: 48px; background: #131316;">
+        <div style="width: 100%; max-width: 420px;">
+          <h2 style="font-size: 30px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 8px;">Ivolve team sign in</h2>
+          <p style="font-size: 17px; color: #a6a6ac; margin: 0 0 32px; line-height: 1.5; font-weight: 500;">Enter your team password to continue.</p>
+
+          <label style="display: block; font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #d2d2d7;">Email address</label>
+          <input type="email" value="priya@ivolvestudios.com" style="width: 100%; height: 54px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 0 16px; font-size: 17px; font-weight: 500; background: #1b1b1f; margin-bottom: 20px; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.12);" />
+
+          <label style="display: block; font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #d2d2d7;">Password</label>
+          <input type="password" value="••••••••••" style="width: 100%; height: 54px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 0 16px; font-size: 17px; font-weight: 500; background: #1b1b1f; margin-bottom: 24px; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.12);" />
+
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #6e6e75; font-weight: 600; margin-bottom: 12px;">DEMO — CHOOSE A ROLE</div>
+          <button onClick="{{ enterAsMember }}" style="width: 100%; height: 56px; background: #e2241c; color: #fff; border: none; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(226,36,28,0.3); margin-bottom: 10px;" style-hover="background: #be1a14;">Sign in as team member →</button>
+          <button onClick="{{ enterAsAdmin }}" style="width: 100%; height: 56px; background: #1b1b1f; color: #f4f4f2; border: 1.5px solid #2e2e34; border-radius: 12px; font-size: 17px; font-weight: 700; cursor: pointer;" style-hover="border-color: #e2241c;">Sign in as administrator</button>
+
+          <button onClick="{{ backToConsultant }}" style="width: 100%; height: 50px; background: transparent; color: #a6a6ac; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 18px;">← Back to client / consultant sign in</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isConsultantProjects }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height: 100vh; display: flex;">
+      <dc-import name="IvolveRail" active="projects" role="{{ railRole }}" name-attr="{{ railName }}" is-team="{{ railIsTeam }}" is-admin="{{ railIsAdmin }}" on-nav="{{ navigate }}" hint-size="88px,100vh"></dc-import>
+      <div data-scroll style="flex: 1; height: 100vh; overflow-y: auto; background: #131316;">
+        <div style="max-width: 1180px; margin: 0 auto; padding: 44px 48px 80px;">
+          <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 8px;">
+            <div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.14em; color: #7a7a82; margin-bottom: 10px;">WELCOME BACK</div>
+              <h1 style="font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin: 0;">{{ userName }}</h1>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 10px; padding: 12px 18px; text-align: center;">
+                <div style="font-size: 24px; font-weight: 800; color: #c9a35b;">{{ totalNeedsReview }}</div>
+                <div style="font-size: 13px; font-weight: 700; color: #a6a6ac;">Awaiting you</div>
+              </div>
+              <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 10px; padding: 12px 18px; text-align: center;">
+                <div style="font-size: 24px; font-weight: 800; color: #f4f4f2;">{{ projectCount }}</div>
+                <div style="font-size: 13px; font-weight: 700; color: #a6a6ac;">Projects</div>
+              </div>
+            </div>
+          </div>
+          <p style="font-size: 18px; color: #a6a6ac; margin: 0 0 32px; font-weight: 500;">You have items waiting for review. Projects needing your attention are flagged.</p>
+
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+            <sc-for list="{{ projects }}" as="proj" hint-placeholder-count="4">
+              <div onClick="{{ proj.onOpen }}" onMouseEnter="{{ proj.onHover }}" onMouseLeave="{{ clearHover }}" style="{{ proj.cardStyle }}">
+                <div style="height: 168px; position: relative; overflow: hidden; background: {{ proj.swatch }};">
+                  <div style="position: absolute; inset: 0; background: {{ proj.render }};"></div>
+                  <div style="position: absolute; top: 14px; left: 14px; background: rgba(16,21,30,0.62); backdrop-filter: blur(6px); color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; padding: 5px 9px; border-radius: 6px; letter-spacing: 0.04em;">{{ proj.code }}</div>
+                  <sc-if value="{{ proj.needsReview }}" hint-placeholder-val="{{ true }}">
+                    <div style="position: absolute; top: 14px; right: 14px; background: #c9a35b; color: #14110a; font-size: 13px; font-weight: 800; padding: 6px 12px; border-radius: 100px; animation: ivPulse 2.4s infinite; box-shadow: 0 2px 8px rgba(201,163,91,0.4);">{{ proj.reviewCount }} to review</div>
+                  </sc-if>
+                </div>
+                <div style="padding: 20px 22px 22px;">
+                  <h3 style="font-size: 21px; font-weight: 800; letter-spacing: -0.01em; margin: 0; line-height: 1.2;">{{ proj.name }}</h3>
+                  <div style="font-size: 15px; color: #a6a6ac; font-weight: 600; margin-top: 6px;">{{ proj.meta }}</div>
+                  <div style="margin-top: 16px; height: 84px;">
+                    <sc-if value="{{ proj.hovered }}" hint-placeholder-val="{{ false }}">
+                      <div style="display: flex; gap: 8px; animation: ivFade 0.25s ease both;">
+                        <sc-for list="{{ proj.thumbs }}" as="t" hint-placeholder-count="3">
+                          <div onClick="{{ t.onOpen }}" style="width: 92px; height: 64px; border-radius: 8px; background: {{ t.swatch }}; position: relative; cursor: pointer; border: 2px solid {{ t.border }}; overflow: hidden;" style-hover="transform: translateY(-2px);">
+                            <div style="position: absolute; inset: 0; background: {{ t.render }};"></div>
+                            <div style="position: absolute; bottom: 4px; left: 4px; right: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #fff; background: rgba(16,21,30,0.6); padding: 2px 4px; border-radius: 4px; text-align: center;">{{ t.rev }}</div>
+                          </div>
+                        </sc-for>
+                      </div>
+                      <div style="font-size: 13px; color: #7a7a82; font-weight: 600; margin-top: 8px;">Click a thumbnail to jump straight to review →</div>
+                    </sc-if>
+                    <sc-if value="{{ proj.notHovered }}" hint-placeholder-val="{{ true }}">
+                      <div style="display: flex; gap: 16px; align-items: center; padding-top: 6px;">
+                        <div style="display: flex; margin-left: 2px;">
+                          <sc-for list="{{ proj.team }}" as="m" hint-placeholder-count="3">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ m.color }}; color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-left: -8px; border: 2px solid #fff;">{{ m.initials }}</div>
+                          </sc-for>
+                        </div>
+                        <div style="font-size: 14px; color: #7a7a82; font-weight: 600;">{{ proj.teamLabel }}</div>
+                        <div style="margin-left: auto; font-size: 14px; color: #7a7a82; font-weight: 600;">Updated {{ proj.updated }}</div>
+                      </div>
+                    </sc-if>
+                  </div>
+                  <button onClick="{{ proj.onDownload }}" style="margin-top: 14px; width: 100%; height: 44px; border-radius: 11px; border: 1px solid #2e2e34; background: #17171b; color: #d2d2d7; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: border-color .15s, color .15s;" style-hover="border-color: #e2241c; color: #f4f4f2;">⤓ Download current CGI set</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <!-- download-set modal -->
+      <sc-if value="{{ dlOpen }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closeDownload }}" style="position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.62); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; padding: 24px;">
+          <div onClick="{{ stopProp }}" style="width: 580px; max-width: 100%; max-height: 86vh; background: #161619; border: 1px solid #2e2e34; border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden;">
+            <div style="padding: 22px 24px 18px;">
+              <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+                <div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #7a7a82; font-weight: 600; margin-bottom: 8px;">DOWNLOAD CURRENT CGIs</div>
+                  <div style="font-size: 22px; font-weight: 800; letter-spacing: -0.01em;">{{ dlProjectName }}</div>
+                </div>
+                <button onClick="{{ closeDownload }}" style="background: #1f1f24; border: none; width: 36px; height: 36px; border-radius: 50%; color: #a6a6ac; font-size: 17px; cursor: pointer;">✕</button>
+              </div>
+              <div style="font-size: 14px; color: #a6a6ac; font-weight: 600; margin-top: 8px;">{{ dlSelectedCount }} of {{ dlTotalCount }} selected · {{ dlSelectedSize }}</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 18px; padding: 0 24px 12px;">
+              <button onClick="{{ dlSelectAll }}" style="background: none; border: none; padding: 0; font-size: 14px; font-weight: 700; color: #e2241c; cursor: pointer;">Select all</button>
+              <button onClick="{{ dlSelectNone }}" style="background: none; border: none; padding: 0; font-size: 14px; font-weight: 700; color: #7a7a82; cursor: pointer;">Clear</button>
+            </div>
+            <div data-scroll style="flex: 1; overflow-y: auto; padding: 4px 16px 12px; border-top: 1px solid #26262b;">
+              <sc-for list="{{ dlAssets }}" as="a" hint-placeholder-count="4">
+                <div onClick="{{ a.onToggle }}" style="{{ a.rowStyle }}">
+                  <div style="{{ a.boxStyle }}"><sc-if value="{{ a.checked }}" hint-placeholder-val="{{ false }}">✓</sc-if></div>
+                  <div style="width: 56px; height: 40px; border-radius: 6px; background: {{ a.render }}; flex: none;"></div>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 15px; font-weight: 800;">{{ a.label }}</div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7a7a82; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ a.file }}</div>
+                  </div>
+                  <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #e2241c; font-weight: 600; flex: none;">{{ a.rev }}</span>
+                  <span style="font-size: 13px; color: #7a7a82; font-weight: 600; min-width: 56px; text-align: right; flex: none;">{{ a.size }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="padding: 16px 24px; border-top: 1px solid #26262b; display: flex; gap: 10px;">
+              <button onClick="{{ dlIndividual }}" style="flex: 1; height: 50px; border-radius: 12px; border: 1.5px solid #2e2e34; background: #1b1b1f; color: #f4f4f2; font-size: 15px; font-weight: 700; cursor: pointer;" style-hover="border-color: #e2241c;">Download individually</button>
+              <button onClick="{{ dlZip }}" style="flex: 1; height: 50px; border-radius: 12px; border: none; background: #e2241c; color: #fff; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 10px rgba(226,36,28,0.32);" style-hover="background: #be1a14;">⤓ Download all as ZIP</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- ============ TEAM PROJECTS (search + self-join) ============ -->
+  <sc-if value="{{ isTeamProjects }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height: 100vh; display: flex;">
+      <dc-import name="IvolveRail" active="projects" role="{{ railRole }}" name-attr="{{ railName }}" is-team="{{ railIsTeam }}" is-admin="{{ railIsAdmin }}" on-nav="{{ navigate }}" hint-size="88px,100vh"></dc-import>
+      <div data-scroll style="flex: 1; height: 100vh; overflow-y: auto; background: #131316;">
+        <div style="max-width: 1180px; margin: 0 auto; padding: 44px 48px 80px;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.14em; color: #7a7a82; margin-bottom: 10px;">IVOLVE TEAM · PROJECTS</div>
+          <h1 style="font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 6px;">Find a project</h1>
+          <p style="font-size: 18px; color: #a6a6ac; font-weight: 500; margin: 0 0 26px;">Search active projects and add yourself to any you're working on. You're currently on {{ teamJoinedCount }}.</p>
+          <div style="position: relative; max-width: 520px; margin-bottom: 28px;">
+            <span style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 17px; color: #6e6e75;">⌕</span>
+            <input value="{{ teamSearchVal }}" onInput="{{ onTeamSearch }}" placeholder="Search projects by name or code…" style="width: 100%; height: 52px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 0 16px 0 44px; font-size: 16px; font-weight: 500; background: #1b1b1f; color: #f4f4f2;" style-focus="border-color: #e2241c;" />
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px;">
+            <sc-for list="{{ teamProjects }}" as="proj" hint-placeholder-count="4">
+              <div style="background: #161619; border: 1px solid #26262b; border-radius: 16px; overflow: hidden;">
+                <div onClick="{{ proj.onOpen }}" style="height: 116px; position: relative; background: {{ proj.render }}; cursor: pointer;">
+                  <div style="position: absolute; top: 12px; left: 12px; background: rgba(8,9,11,0.66); backdrop-filter: blur(6px); color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 5px 9px; border-radius: 6px;">{{ proj.code }}</div>
+                </div>
+                <div style="padding: 18px 20px; display: flex; align-items: center; gap: 16px;">
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 19px; font-weight: 800;">{{ proj.name }}</div>
+                    <div style="font-size: 14px; color: #7a7a82; font-weight: 600; margin-top: 3px;">{{ proj.meta }}</div>
+                  </div>
+                  <button onClick="{{ proj.onJoin }}" style="{{ proj.joinBtnStyle }}">{{ proj.joinLabel }}</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ REVIEWER WORKSPACE (HERO) ============ -->
+  <sc-if value="{{ isReviewer }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Reviewer markup" style="height: 100vh; display: flex; flex-direction: column; background: #1b1f26; overflow: hidden;">
+
+      <!-- top bar -->
+      <div style="height: 64px; flex: none; background: #1b1b1f; border-bottom: 1px solid #26262b; display: flex; align-items: center; padding: 0 20px; gap: 16px; z-index: 30;">
+        <button onClick="{{ backToProjects }}" style="display: flex; align-items: center; gap: 8px; background: #f1f3f6; border: none; height: 42px; padding: 0 16px; border-radius: 10px; font-size: 15px; font-weight: 700; color: #d2d2d7; cursor: pointer;" style-hover="background: #e6e9ee;">← Projects</button>
+        <div style="width: 1px; height: 28px; background: #26262b;"></div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <h2 style="font-size: 18px; font-weight: 800; margin: 0; letter-spacing: -0.01em;">{{ assetTitle }}</h2>
+            <span style="background: #e2241c; color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; padding: 3px 9px; border-radius: 6px;">{{ assetRev }}</span>
+            <span style="background: #2a2417; color: #c9a35b; font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 6px;">{{ assetType }}</span>
+          </div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7a7a82; margin-top: 3px;">{{ assetFilename }} · uploaded {{ assetUploaded }}</div>
+        </div>
+        <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+          <button onClick="{{ toggleSwipe }}" style="{{ swipeBtnStyle }}">{{ icCompare }} Compare to {{ prevRev }}</button>
+          <div style="position: relative;">
+            <button onClick="{{ toggleDownload }}" style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #2e2e34; background: #1b1b1f; font-size: 15px; font-weight: 700; color: #d2d2d7; cursor: pointer;" style-hover="border-color: #e2241c;">{{ icDownload }} Download ▾</button>
+            <sc-if value="{{ downloadOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position: absolute; top: 52px; right: 0; z-index: 40; width: 300px; background: #1b1b1f; border: 1px solid #2e2e34; border-radius: 12px; box-shadow: 0 18px 50px rgba(0,0,0,0.55); padding: 8px;">
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: #6e6e75; font-weight: 600; padding: 6px 10px 8px;">DOWNLOAD AS PDF</div>
+                <button onClick="{{ downloadOriginal }}" style="display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border: none; padding: 11px 10px; border-radius: 9px; cursor: pointer;" style-hover="background: #222229">
+                  <span style="font-size: 20px;">🖼</span>
+                  <span style="display: block;"><span style="display: block; font-size: 14px; font-weight: 800; color: #f4f4f2;">Original image</span><span style="display: block; font-size: 12px; color: #7a7a82; font-weight: 600;">The clean {{ assetRev }} render</span></span>
+                </button>
+                <button onClick="{{ downloadMarkup }}" style="display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border: none; padding: 11px 10px; border-radius: 9px; cursor: pointer;" style-hover="background: #222229">
+                  <span style="font-size: 20px;">✎</span>
+                  <span style="display: block;"><span style="display: block; font-size: 14px; font-weight: 800; color: #f4f4f2;">With my markups</span><span style="display: block; font-size: 12px; color: #7a7a82; font-weight: 600;">Render plus your pins, shapes &amp; notes</span></span>
+                </button>
+              </div>
+            </sc-if>
+          </div>
+          <button onClick="{{ submitReview }}" style="height: 44px; padding: 0 18px; border-radius: 10px; border: 1.5px solid #2e2e34; background: #1b1b1f; font-size: 15px; font-weight: 700; color: #d2d2d7; cursor: pointer;" style-hover="border-color: #e2241c;">Submit review</button>
+          <button onClick="{{ approve }}" style="{{ approveBtnStyle }}">{{ icCheck }} {{ approveLabel }}</button>
+        </div>
+      </div>
+
+      <div style="flex: 1; display: flex; min-height: 0; position: relative;">
+
+        <!-- LEFT: slim artist-brief tab -->
+        <div style="width: 56px; flex: none; background: #0f0f12; border-right: 1px solid #26262b; display: flex; flex-direction: column; align-items: center; padding-top: 16px; gap: 16px; z-index: 26;">
+          <button onClick="{{ toggleBrief }}" title="Artist brief" style="{{ briefTabBtnStyle }}">{{ icMail }}</button>
+          <div onClick="{{ toggleBrief }}" style="writing-mode: vertical-rl; transform: rotate(180deg); font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.18em; color: #6e6e75; font-weight: 600; cursor: pointer;">ARTIST BRIEF · {{ artistNoteCount }}</div>
+        </div>
+
+        <!-- artist-brief drawer -->
+        <sc-if value="{{ briefOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; left: 56px; top: 0; bottom: 0; width: 326px; z-index: 25; background: #161619; border-right: 1px solid #26262b; box-shadow: 24px 0 50px rgba(0,0,0,0.45); display: flex; flex-direction: column;">
+            <div style="padding: 16px 18px; border-bottom: 1px solid #26262b; display: flex; align-items: center; justify-content: space-between;">
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #7a7a82; font-weight: 600;">FROM THE IVOLVE TEAM</div>
+              <button onClick="{{ toggleBrief }}" style="background: none; border: none; color: #7a7a82; font-size: 17px; cursor: pointer; line-height: 1;">✕</button>
+            </div>
+            <div data-scroll style="flex: 1; overflow-y: auto; padding: 16px 18px;">
+              <sc-for list="{{ artistNotes }}" as="note" hint-placeholder-count="2">
+                <div style="background: #131316; border: 1px solid #26262b; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;">
+                  <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 8px;">
+                    <div style="width: 30px; height: 30px; border-radius: 50%; background: #2a2a30; color: #f4f4f2; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center;">{{ note.initials }}</div>
+                    <div>
+                      <div style="font-size: 14px; font-weight: 800;">{{ note.name }}</div>
+                      <div style="font-size: 12px; color: #7a7a82; font-weight: 600;">{{ note.time }}</div>
+                    </div>
+                  </div>
+                  <p style="font-size: 15px; line-height: 1.5; color: #d2d2d7; margin: 0; font-weight: 500;">{{ note.text }}</p>
+                </div>
+              </sc-for>
+              <div style="margin-top: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #7a7a82; font-weight: 600; padding: 10px 0 8px;">REVIEWERS REQUESTED</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+                <sc-for list="{{ requestedRoles }}" as="r" hint-placeholder-count="4">
+                  <span style="font-size: 13px; font-weight: 700; padding: 5px 11px; border-radius: 100px; background: {{ r.bg }}; color: {{ r.fg }};">{{ r.label }}</span>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- CENTER: stage -->
+        <div style="{{ centerStyle }}">
+          <!-- image stage -->
+          <div onWheel="{{ onWheel }}" style="flex: 1; position: relative; overflow: hidden; min-height: 0;" data-scroll>
+            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px;">
+              <div ref="{{ stageRef }}" onClick="{{ onStageClick }}" onMouseDown="{{ onStageDown }}" style="{{ stageStyle }}">
+                <!-- current render -->
+                <div style="position: absolute; inset: 0; background: {{ currentRender }};"></div>
+                <!-- previous render revealed by swipe -->
+                <div style="{{ swipeClipStyle }}">
+                  <div style="position: absolute; inset: 0; width: {{ stageWpx }}; height: {{ stageHpx }}; background: {{ prevRender }};"></div>
+                  <div style="position: absolute; top: 12px; left: 12px; background: rgba(16,21,30,0.72); color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 5px 9px; border-radius: 6px;">{{ prevRev }} (previous)</div>
+                </div>
+                <!-- swipe handle -->
+                <div style="{{ swipeHandleStyle }}" onMouseDown="{{ startSwipe }}" onClick="{{ stopProp }}">
+                  <div style="display: flex; align-items: center; gap: 4px; background: #fff; padding: 7px 9px; border-radius: 7px; box-shadow: 0 2px 10px rgba(0,0,0,0.4);">
+                    <div style="width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-right: 7px solid #16191d;"></div>
+                    <div style="width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 7px solid #16191d;"></div>
+                  </div>
+                </div>
+                <!-- current label -->
+                <div style="position: absolute; top: 12px; right: 12px; background: rgba(226,36,28,0.92); color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 5px 9px; border-radius: 6px;">{{ assetRev }} (current)</div>
+                <!-- freehand markup (committed + draft) -->
+                {{ markupSvg }}
+                <!-- draft pin marker while composing -->
+                <div style="{{ draftMarkerStyle }}">{{ composerN }}</div>
+                <!-- pins -->
+                <sc-for list="{{ visiblePins }}" as="pin" hint-placeholder-count="0">
+                  <div onClick="{{ pin.onClick }}" onMouseDown="{{ pin.onPinDown }}" style="{{ pin.markerStyle }}" style-hover="transform: translate(-50%,-100%) scale(1.14); box-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 12px 26px rgba(0,0,0,0.45);" title="{{ pin.title }}">{{ pin.n }}</div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: rgba(15,15,18,0.86); backdrop-filter: blur(8px); color: #cfd5de; font-size: 14px; font-weight: 600; padding: 9px 18px; border-radius: 100px; z-index: 12; max-width: 70%; text-align: center;">{{ stageHint }}</div>
+            <!-- floating toolbar -->
+            <div style="position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 5px; background: rgba(15,15,18,0.94); border: 1px solid #2e2e34; padding: 6px; border-radius: 14px; backdrop-filter: blur(10px); box-shadow: 0 8px 30px rgba(0,0,0,0.45); z-index: 13;">
+              <button onClick="{{ setToolPin }}" title="Add a numbered note" style="{{ toolPinStyle }}">{{ icPin }} Pin</button>
+              <button onClick="{{ setToolSketch }}" title="Draw a freehand shape around an area" style="{{ toolSketchStyle }}">{{ icDraw }} Draw</button>
+              <button onClick="{{ setToolPan }}" title="Pan (or hold middle mouse button)" style="{{ toolPanStyle }}">{{ icPan }} Pan</button>
+              <div style="width: 1px; height: 26px; background: #2e2e34; margin: 0 3px;"></div>
+              <button onClick="{{ zoomOut }}" style="width: 38px; height: 38px; border: none; background: transparent; color: #cfd5de; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">{{ icMinusSm }}</button>
+              <div style="min-width: 52px; text-align: center; color: #fff; font-size: 13px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;">{{ zoomLabel }}</div>
+              <button onClick="{{ zoomIn }}" style="width: 38px; height: 38px; border: none; background: transparent; color: #cfd5de; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">{{ icPlusSm }}</button>
+              <button onClick="{{ zoomReset }}" style="display: flex; align-items: center; gap: 6px; padding: 0 12px; height: 38px; border: none; background: transparent; color: #cfd5de; font-size: 13px; font-weight: 700; border-radius: 8px; cursor: pointer;">{{ icFit }} Fit</button>
+              <div style="width: 1px; height: 26px; background: #2e2e34; margin: 0 3px;"></div>
+              <button onClick="{{ toggleFs }}" title="Full screen" style="{{ fsBtnStyle }}">{{ icFull }} {{ fsLabel }}</button>
+              <button onClick="{{ toggleShowComments }}" title="Show / hide notes on image" style="{{ showCommentsBtnStyle }}">{{ icEye }} {{ showCommentsLabel }}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: comments + AI -->
+        <div style="width: 380px; flex: none; background: #1b1b1f; border-left: 1px solid #26262b; display: flex; flex-direction: column; min-height: 0;">
+          <div style="display: flex; padding: 6px 8px; gap: 4px; border-bottom: 1px solid #26262b; flex: none;">
+            <button onClick="{{ setTabMine }}" style="{{ tabMineStyle }}">My notes <span style="opacity: 0.7;">{{ myCount }}</span></button>
+            <button onClick="{{ setTabEveryone }}" style="{{ tabEveryoneStyle }}">Everyone <span style="opacity: 0.7;">{{ everyoneCount }}</span></button>
+            <button onClick="{{ setTabAi }}" style="{{ tabAiStyle }}">{{ icSparkle }} AI <sc-if value="{{ hasConflict }}" hint-placeholder-val="{{ true }}"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #dc2626; margin-left: 2px;"></span></sc-if></button>
+          </div>
+
+          <div data-scroll style="flex: 1; overflow-y: auto;">
+            <!-- comment lists -->
+            <sc-if value="{{ showCommentList }}" hint-placeholder-val="{{ true }}">
+              <div style="padding: 14px 16px;">
+                <sc-for list="{{ listPins }}" as="c" hint-placeholder-count="3">
+                  <div onClick="{{ c.onSelect }}" style="{{ c.cardStyle }}">
+                    <div style="display: flex; align-items: flex-start; gap: 11px;">
+                      <div style="{{ c.numStyle }}">{{ c.n }}</div>
+                      <div style="flex: 1; min-width: 0;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                          <span style="font-size: 14px; font-weight: 800; color: #f4f4f2;">{{ c.author }}</span>
+                          <span style="font-size: 12px; font-weight: 700; color: {{ c.roleColor }};">{{ c.role }}</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                          <span style="{{ c.tagStyle }}">{{ c.tag }}</span>
+                          <sc-if value="{{ c.flagged }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 800; color: #dc2626; background: #2e1515; padding: 3px 8px; border-radius: 6px;">⚠ Conflict</span></sc-if>
+                        </div>
+                        <p style="font-size: 15px; line-height: 1.5; color: #d2d2d7; margin: 0; font-weight: 500;">{{ c.text }}</p>
+                        <sc-if value="{{ c.attachment }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: flex; align-items: center; gap: 8px; margin-top: 9px; padding: 8px 11px; background: #222229; border-radius: 9px;">
+                            <span style="font-size: 15px;">📎</span>
+                            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; color: #d2d2d7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ c.attachment }}</span>
+                          </div>
+                        </sc-if>
+                        <div style="display: flex; align-items: center; gap: 14px; margin-top: 9px;">
+                          <sc-if value="{{ c.hasShape }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 700; color: #c9a35b;">✎ Area marked</span></sc-if>
+                          <sc-if value="{{ c.canEdit }}" hint-placeholder-val="{{ false }}"><button onClick="{{ c.onEdit }}" style="background: none; border: none; padding: 0; font-size: 13px; font-weight: 700; color: #e2241c; cursor: pointer;">✎ Edit</button></sc-if>
+                          <button onClick="{{ c.onToggleVis }}" style="background: none; border: none; padding: 0; font-size: 13px; font-weight: 700; color: #7a7a82; cursor: pointer;">{{ c.visLabel }}</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+
+                <sc-if value="{{ isMineTab }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ setToolPin }}" style="width: 100%; margin-top: 6px; height: 52px; border: 1.5px dashed #3a3a41; background: #131316; border-radius: 12px; font-size: 15px; font-weight: 700; color: #e2241c; cursor: pointer;" style-hover="border-color: #e2241c; background: #241413;">＋ Click the image to add a numbered note</button>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <!-- AI panel -->
+            <sc-if value="{{ isAiTab }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 16px;">
+                <div style="background: linear-gradient(135deg, #17171c, #1b1620); border: 1px solid #2a2a32; border-radius: 14px; padding: 16px; margin-bottom: 16px;">
+                  <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 6px;">
+                    <span style="font-size: 17px;">✦</span>
+                    <span style="font-size: 15px; font-weight: 800;">Claude reviewed all 7 comments</span>
+                  </div>
+                  <p style="font-size: 14px; line-height: 1.5; color: #b4b4ba; margin: 0; font-weight: 500;">Cross-checked for contradictions, clarity and grouped by type. Found <strong style="color: #dc2626;">1 conflict</strong> and <strong style="color: #c9a35b;">1 unclear note</strong>.</p>
+                </div>
+
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #7a7a82; font-weight: 600; margin-bottom: 10px;">⚠ CONFLICTS</div>
+                <div style="border: 1.5px solid #5a2420; background: #1d1414; border-radius: 14px; padding: 16px; margin-bottom: 18px;">
+                  <div style="font-size: 15px; font-weight: 800; color: #ef6b62; margin-bottom: 12px;">Kitchen island position — direct contradiction</div>
+                  <div style="border-left: 3px solid #e2241c; padding: 2px 0 2px 12px; margin-bottom: 10px;">
+                    <div style="font-size: 13px; font-weight: 800; color: #e2241c;">You · Architect · Note 3</div>
+                    <div style="font-size: 14px; color: #d2d2d7; font-weight: 500; line-height: 1.45;">Move the island 300mm toward the window.</div>
+                  </div>
+                  <div style="border-left: 3px solid #c026d3; padding: 2px 0 2px 12px; margin-bottom: 14px;">
+                    <div style="font-size: 13px; font-weight: 800; color: #c026d3;">Sarah Whitfield · Interior Designer</div>
+                    <div style="font-size: 14px; color: #d2d2d7; font-weight: 500; line-height: 1.45;">Keep the island; extend the bench 300mm away from the window.</div>
+                  </div>
+                  <button onClick="{{ notifyConflict }}" style="width: 100%; height: 46px; background: #e2241c; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;" style-hover="background: #d2d2d7;">✉ Notify both consultants to resolve</button>
+                </div>
+
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #7a7a82; font-weight: 600; margin-bottom: 10px;">◇ NEEDS CLARITY</div>
+                <div style="border: 1.5px solid #574a26; background: #1d1a12; border-radius: 14px; padding: 16px; margin-bottom: 18px;">
+                  <div style="font-size: 14px; font-weight: 800; color: #f4f4f2; margin-bottom: 4px;">Marcus Lee · Landscape Designer</div>
+                  <p style="font-size: 14px; color: #d2d2d7; font-weight: 500; margin: 0 0 8px; line-height: 1.45;">“Make the courtyard planting pop more.”</p>
+                  <p style="font-size: 14px; color: #c9a35b; font-weight: 600; margin: 0; line-height: 1.45;">Too vague to action — which plants, what colour, how dense? Ask Marcus for specifics.</p>
+                </div>
+
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #7a7a82; font-weight: 600; margin-bottom: 10px;">≡ ACTION SUMMARY FOR IVOLVE</div>
+                <div style="border: 1px solid #26262b; border-radius: 14px; padding: 16px;">
+                  <sc-for list="{{ aiSummary }}" as="s" hint-placeholder-count="3">
+                    <div style="display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid #f1f3f6;">
+                      <span style="{{ s.tagStyle }}">{{ s.tag }}</span>
+                      <span style="font-size: 14px; color: #d2d2d7; font-weight: 500; line-height: 1.45; flex: 1;">{{ s.text }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- active comment composer -->
+          <sc-if value="{{ composerOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="flex: none; border-top: 1px solid #26262b; padding: 14px 16px; background: #131316;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <div style="width: 26px; height: 26px; border-radius: 50%; background: #c9a35b; color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center;">{{ composerN }}</div>
+                <span style="font-size: 14px; font-weight: 800;">{{ composerHeader }}</span>
+              </div>
+              <div style="font-size: 13px; font-weight: 600; color: #c9a35b; margin-bottom: 10px;">A comment is required — this can't be saved empty.</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+                <sc-for list="{{ tagChoices }}" as="tc" hint-placeholder-count="4">
+                  <button onClick="{{ tc.onPick }}" style="{{ tc.style }}">{{ tc.label }}</button>
+                </sc-for>
+              </div>
+              <textarea ref="{{ composerRef }}" placeholder="Describe the change clearly, e.g. 'Change the sofa to tan leather per FS-04.'" style="width: 100%; min-height: 70px; border: 1.5px solid #2e2e34; border-radius: 10px; padding: 11px 13px; font-size: 15px; font-weight: 500; resize: vertical; line-height: 1.5; background: #131316; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.1);"></textarea>
+              <sc-if value="{{ composerCanRedraw }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ onRedrawShape }}" style="display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 10px; height: 42px; padding: 0 13px; border-radius: 10px; border: 1.5px solid #2e2e34; background: #17171b; color: #c9a35b; font-size: 14px; font-weight: 700; cursor: pointer;">↻ Redraw this area — keeps your note &amp; comment</button>
+              </sc-if>
+              <button onClick="{{ attachRef }}" style="{{ attachBtnStyle }}"><span style="font-size: 15px;">📎</span> {{ attachLabel }}</button>
+              <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <button onClick="{{ cancelComposer }}" style="flex: none; height: 44px; padding: 0 16px; background: #1b1b1f; border: 1.5px solid #2e2e34; border-radius: 10px; font-size: 15px; font-weight: 700; color: #a6a6ac; cursor: pointer;">Cancel</button>
+                <button onClick="{{ saveComment }}" style="flex: 1; height: 44px; background: #e2241c; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;" style-hover="background: #be1a14;">{{ composerSaveLabel }}</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ UPLOAD (Ivolve team) ============ -->
+  <sc-if value="{{ isUpload }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height: 100vh; display: flex;">
+      <dc-import name="IvolveRail" active="upload" role="{{ railRole }}" name-attr="{{ railName }}" is-team="{{ railIsTeam }}" is-admin="{{ railIsAdmin }}" on-nav="{{ navigate }}" hint-size="88px,100vh"></dc-import>
+      <div data-scroll style="flex: 1; height: 100vh; overflow-y: auto; background: #131316;">
+        <div style="max-width: 1240px; margin: 0 auto; padding: 40px 48px 80px;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.14em; color: #7a7a82; margin-bottom: 10px;">IVOLVE TEAM · UPLOAD FOR REVIEW</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 28px;">
+            <div style="position: relative;">
+              <button onClick="{{ upTogglePicker }}" style="display: flex; align-items: center; gap: 10px; background: transparent; border: none; cursor: pointer; padding: 0;">
+                <h1 style="font-size: 32px; font-weight: 800; letter-spacing: -0.02em; margin: 0; color: #f4f4f2;">Upload to <span style="color: #e2241c;">{{ upProjectName }}</span></h1>
+                <span style="font-size: 16px; color: #7a7a82;">▾</span>
+              </button>
+              <sc-if value="{{ upPickerOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position: absolute; top: 50px; left: 0; z-index: 40; width: 420px; background: #1b1b1f; border: 1px solid #2e2e34; border-radius: 14px; box-shadow: 0 18px 50px rgba(0,0,0,0.55); padding: 12px;">
+                  <div style="position: relative; margin-bottom: 8px;">
+                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 15px; color: #6e6e75;">⌕</span>
+                    <input value="{{ upSearchVal }}" onInput="{{ onUpSearch }}" placeholder="Search projects…" style="width: 100%; height: 44px; border: 1.5px solid #2e2e34; border-radius: 10px; padding: 0 12px 0 34px; font-size: 15px; font-weight: 500; background: #131316; color: #f4f4f2;" style-focus="border-color: #e2241c;" />
+                  </div>
+                  <sc-for list="{{ upProjectOptions }}" as="o" hint-placeholder-count="4">
+                    <div onClick="{{ o.onPick }}" style="{{ o.optStyle }}">
+                      <div style="width: 40px; height: 30px; border-radius: 6px; background: {{ o.render }}; flex: none;"></div>
+                      <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 15px; font-weight: 800;">{{ o.name }}</div>
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7a7a82;">{{ o.code }}</div>
+                      </div>
+                      <sc-if value="{{ o.current }}" hint-placeholder-val="{{ false }}"><span style="color: #e2241c; font-weight: 800; font-size: 16px;">✓</span></sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+            <div style="display: flex; background: #1a1a1e; padding: 5px; border-radius: 12px; width: 280px;">
+              <button onClick="{{ upSetImage }}" style="{{ upImgTabStyle }}">CGI image</button>
+              <button onClick="{{ upSetVideo }}" style="{{ upVidTabStyle }}">Video</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.55fr 1fr; gap: 24px; align-items: start;">
+
+            <!-- LEFT: drop / preview -->
+            <div>
+              <sc-if value="{{ upUploaded }}" hint-placeholder-val="{{ false }}">
+                <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 18px; overflow: hidden;">
+                  <div style="height: 360px; position: relative; background: {{ upRender }};">
+                    <div style="position: absolute; top: 16px; left: 16px; background: rgba(16,21,30,0.72); color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 13px; padding: 7px 11px; border-radius: 8px;">{{ upFilename }}</div>
+                    <sc-if value="{{ upIsVideo }}" hint-placeholder-val="{{ false }}">
+                      <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;"><div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.92); display: flex; align-items: center; justify-content: center; font-size: 28px; color: #f4f4f2;">▶</div></div>
+                    </sc-if>
+                    <button onClick="{{ upReset }}" style="position: absolute; top: 16px; right: 16px; height: 38px; padding: 0 14px; border-radius: 9px; border: none; background: rgba(255,255,255,0.92); font-size: 14px; font-weight: 700; cursor: pointer;">Replace</button>
+                  </div>
+                  <div style="padding: 22px 24px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                      <span style="font-size: 18px;">✦</span>
+                      <span style="font-size: 16px; font-weight: 800;">Filename read automatically</span>
+                      <span style="font-size: 13px; font-weight: 700; color: #33a96e; background: #e9f7ef; padding: 4px 10px; border-radius: 6px;">Optimised for web · zoom-ready</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
+                      <sc-for list="{{ upParsed }}" as="p" hint-placeholder-count="4">
+                        <div style="background: #131316; border-radius: 12px; padding: 14px 16px;">
+                          <div style="font-size: 12px; font-weight: 700; color: #7a7a82; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">{{ p.k }}</div>
+                          <div style="{{ p.style }}">{{ p.v }}</div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ upNotUploaded }}" hint-placeholder-val="{{ true }}">
+                <div onClick="{{ upDrop }}" style="background: #1b1b1f; border: 2.5px dashed #3a3a41; border-radius: 18px; height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; text-align: center; padding: 40px;" style-hover="border-color: #e2241c; background: #1a1411;">
+                  <div style="width: 84px; height: 84px; border-radius: 22px; background: #241413; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #e2241c; margin-bottom: 22px;">↑</div>
+                  <div style="font-size: 23px; font-weight: 800; margin-bottom: 8px;">Drag &amp; drop your {{ upKind }} here</div>
+                  <div style="font-size: 17px; color: #a6a6ac; font-weight: 500; max-width: 460px; line-height: 1.5;">We'll convert it to an efficient, zoom-ready web format automatically and read the revision from the filename.</div>
+                  <button style="margin-top: 22px; height: 50px; padding: 0 24px; border-radius: 12px; border: none; background: #e2241c; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;">Browse files</button>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #5e5e66; margin-top: 18px;">e.g. 550_George_St_View01_Living_R3.jpg</div>
+                </div>
+              </sc-if>
+
+              <!-- attachments -->
+              <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 18px; padding: 20px 24px; margin-top: 24px;">
+                <div style="font-size: 16px; font-weight: 800; margin-bottom: 6px;">Supporting files</div>
+                <div style="font-size: 15px; color: #a6a6ac; font-weight: 500; margin-bottom: 14px;">Any documents are auto-converted to PDF for easy review &amp; printing.</div>
+                <div style="display: flex; gap: 12px; align-items: center; padding: 12px 16px; border: 1.5px dashed #2e2e34; border-radius: 12px;">
+                  <span style="font-size: 22px;">📎</span>
+                  <span style="font-size: 15px; font-weight: 700; color: #e2241c;">Attach a file</span>
+                  <span style="font-size: 14px; color: #7a7a82; font-weight: 500;">PDF, DOCX, XLSX, images</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT: notes, versions, reviewers, submit -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 18px; padding: 20px 22px;">
+                <div style="font-size: 16px; font-weight: 800; margin-bottom: 4px;">Supersedes version</div>
+                <div style="font-size: 14px; color: #a6a6ac; font-weight: 500; margin-bottom: 14px;">Pick the image this replaces so reviewers can swipe-compare.</div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <sc-for list="{{ versions }}" as="v" hint-placeholder-count="3">
+                    <div onClick="{{ v.onPick }}" style="{{ v.cardStyle }}">
+                      <div style="width: 56px; height: 40px; border-radius: 8px; background: {{ v.render }}; flex: none;"></div>
+                      <div style="flex: 1;">
+                        <div style="font-size: 15px; font-weight: 800;">{{ v.label }}</div>
+                        <div style="font-size: 13px; color: #7a7a82; font-weight: 600;">Current {{ v.rev }} · {{ v.when }}</div>
+                      </div>
+                      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; color: #e2241c;">{{ v.rev }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 18px; padding: 20px 22px;">
+                <div style="font-size: 16px; font-weight: 800; margin-bottom: 12px;">Note for the reviewing team</div>
+                <textarea placeholder="e.g. This update does not yet include view photography — awaiting final photos." style="width: 100%; min-height: 92px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 13px 15px; font-size: 15px; font-weight: 500; resize: vertical; line-height: 1.5; background: #131316; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.1);"></textarea>
+              </div>
+
+              <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 18px; padding: 20px 22px;">
+                <div style="font-size: 16px; font-weight: 800; margin-bottom: 4px;">Request review from</div>
+                <div style="font-size: 14px; color: #a6a6ac; font-weight: 500; margin-bottom: 14px;">These groups get the email alert.</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                  <sc-for list="{{ reviewerList }}" as="r" hint-placeholder-count="6">
+                    <div onClick="{{ r.onToggle }}" style="{{ r.rowStyle }}">
+                      <div style="{{ r.boxStyle }}"><sc-if value="{{ r.checked }}" hint-placeholder-val="{{ false }}">✓</sc-if></div>
+                      <span style="font-size: 15px; font-weight: 700; color: #d2d2d7;">{{ r.label }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <input placeholder="Other — type a custom role…" style="width: 100%; height: 46px; border: 1.5px solid #26262b; border-radius: 10px; padding: 0 14px; font-size: 15px; font-weight: 500; margin-top: 10px; background: #131316; color: #f4f4f2;" style-focus="border-color: #e2241c;" />
+              </div>
+
+              <button onClick="{{ upSubmit }}" style="height: 58px; background: #e2241c; color: #fff; border: none; border-radius: 14px; font-size: 18px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(226,36,28,0.3);" style-hover="background: #be1a14;">Submit &amp; send email alert →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ ADMIN ============ -->
+  <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height: 100vh; display: flex;">
+      <dc-import name="IvolveRail" active="admin" role="{{ railRole }}" name-attr="{{ railName }}" is-team="{{ railIsTeam }}" is-admin="{{ railIsAdmin }}" on-nav="{{ navigate }}" hint-size="88px,100vh"></dc-import>
+      <div data-scroll style="flex: 1; height: 100vh; overflow-y: auto; background: #131316;">
+        <div style="max-width: 1240px; margin: 0 auto; padding: 40px 48px 80px;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.14em; color: #7a7a82; margin-bottom: 10px;">ADMIN CONTROLS</div>
+          <h1 style="font-size: 32px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 28px;">Projects &amp; access</h1>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px;">
+            <h2 style="font-size: 21px; font-weight: 800; margin: 0; flex: none;">Projects</h2>
+            <div style="position: relative; flex: 1; max-width: 360px;">
+              <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 15px; color: #6e6e75;">⌕</span>
+              <input value="{{ adminSearchVal }}" onInput="{{ onAdminSearch }}" placeholder="Search projects by name or code…" style="width: 100%; height: 46px; border: 1.5px solid #2e2e34; border-radius: 11px; padding: 0 14px 0 38px; font-size: 15px; font-weight: 500; background: #1b1b1f; color: #f4f4f2;" style-focus="border-color: #e2241c;" />
+            </div>
+            <button onClick="{{ addProject }}" style="height: 46px; padding: 0 18px; border-radius: 11px; border: none; background: #e2241c; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; flex: none;">＋ New project</button>
+          </div>
+
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #33a96e; font-weight: 600; margin-bottom: 10px;">● ACTIVE PROJECTS</div>
+          <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 16px; overflow: hidden; margin-bottom: 28px;">
+            <div style="display: grid; grid-template-columns: 2.2fr 1fr 1fr 1fr 1fr; padding: 13px 22px; background: #131316; font-size: 12px; font-weight: 800; color: #7a7a82; text-transform: uppercase; letter-spacing: 0.05em;">
+              <div>Project</div><div>Code</div><div>Status</div><div>Reviewers</div><div>Updated</div>
+            </div>
+            <sc-for list="{{ activeProjects }}" as="p" hint-placeholder-count="3">
+              <div style="display: grid; grid-template-columns: 2.2fr 1fr 1fr 1fr 1fr; padding: 18px 22px; border-top: 1px solid #26262b; align-items: center;">
+                <div style="font-size: 17px; font-weight: 800;">{{ p.name }}</div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #a6a6ac; font-weight: 500;">{{ p.code }}</div>
+                <div><span style="{{ p.statusStyle }}">{{ p.status }}</span></div>
+                <div style="font-size: 16px; font-weight: 700; color: #d2d2d7;">{{ p.reviewers }}</div>
+                <div style="font-size: 15px; color: #7a7a82; font-weight: 600;">{{ p.updated }}</div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noActive }}" hint-placeholder-val="{{ false }}"><div style="padding: 20px 22px; font-size: 15px; color: #7a7a82; font-weight: 600;">No active projects match “{{ adminSearchVal }}”.</div></sc-if>
+          </div>
+
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #7a7a82; font-weight: 600; margin-bottom: 10px;">○ NOT ACTIVE</div>
+          <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 16px; overflow: hidden; margin-bottom: 40px;">
+            <div style="display: grid; grid-template-columns: 2.2fr 1fr 1fr 1fr 1fr; padding: 13px 22px; background: #131316; font-size: 12px; font-weight: 800; color: #7a7a82; text-transform: uppercase; letter-spacing: 0.05em;">
+              <div>Project</div><div>Code</div><div>Status</div><div>Reviewers</div><div>Updated</div>
+            </div>
+            <sc-for list="{{ inactiveProjects }}" as="p" hint-placeholder-count="2">
+              <div style="display: grid; grid-template-columns: 2.2fr 1fr 1fr 1fr 1fr; padding: 18px 22px; border-top: 1px solid #26262b; align-items: center; opacity: 0.86;">
+                <div style="font-size: 17px; font-weight: 800;">{{ p.name }}</div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #a6a6ac; font-weight: 500;">{{ p.code }}</div>
+                <div><span style="{{ p.statusStyle }}">{{ p.status }}</span></div>
+                <div style="font-size: 16px; font-weight: 700; color: #d2d2d7;">{{ p.reviewers }}</div>
+                <div style="font-size: 15px; color: #7a7a82; font-weight: 600;">{{ p.updated }}</div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noInactive }}" hint-placeholder-val="{{ false }}"><div style="padding: 20px 22px; font-size: 15px; color: #7a7a82; font-weight: 600;">No inactive projects match “{{ adminSearchVal }}”.</div></sc-if>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px;">
+            <div>
+              <h2 style="font-size: 21px; font-weight: 800; margin: 0;">Clients &amp; consultants</h2>
+              <div style="font-size: 14px; color: #7a7a82; font-weight: 600; margin-top: 4px;">Grouped by company — click a company to expand its people.</div>
+            </div>
+            <button onClick="{{ addConsultant }}" style="height: 46px; padding: 0 18px; border-radius: 11px; border: none; background: #e2241c; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; flex: none;">＋ Add consultant</button>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <sc-for list="{{ companyGroups }}" as="co" hint-placeholder-count="4">
+              <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 14px; overflow: hidden;">
+                <div onClick="{{ co.onToggle }}" style="display: flex; align-items: center; gap: 16px; padding: 18px 22px; cursor: pointer;" style-hover="background: #1f1f24;">
+                  <span style="{{ co.chevronStyle }}">▸</span>
+                  <div style="width: 42px; height: 42px; border-radius: 10px; background: #222229; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: #f4f4f2; flex: none;">{{ co.badge }}</div>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 18px; font-weight: 800;">{{ co.name }}</div>
+                    <div style="font-size: 14px; color: #7a7a82; font-weight: 600;">{{ co.summary }}</div>
+                  </div>
+                  <span style="{{ co.statusStyle }}">{{ co.statusLabel }}</span>
+                  <span style="font-size: 14px; color: #7a7a82; font-weight: 700; min-width: 84px; text-align: right;">{{ co.countLabel }}</span>
+                </div>
+                <sc-if value="{{ co.expanded }}" hint-placeholder-val="{{ false }}">
+                  <div>
+                    <sc-for list="{{ co.members }}" as="c" hint-placeholder-count="2">
+                      <div style="display: grid; grid-template-columns: 2fr 1.4fr 2fr 1fr 1.3fr; padding: 14px 22px 14px 62px; border-top: 1px solid #1f1f23; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 11px;">
+                          <div style="width: 34px; height: 34px; border-radius: 50%; background: {{ c.avatar }}; color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex: none;">{{ c.initials }}</div>
+                          <span style="font-size: 15px; font-weight: 800;">{{ c.name }}</span>
+                        </div>
+                        <div style="font-size: 14px; font-weight: 700; color: #d2d2d7;">{{ c.role }}</div>
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #a6a6ac; font-weight: 500; overflow: hidden; text-overflow: ellipsis;">{{ c.email }}</div>
+                        <div><span style="{{ c.statusStyle }}">{{ c.status }}</span></div>
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                          <sc-if value="{{ c.pending }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ c.onInvite }}" style="height: 36px; padding: 0 13px; border-radius: 9px; border: none; background: #e2241c; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;">Invite</button>
+                          </sc-if>
+                          <button onClick="{{ c.onReset }}" style="height: 36px; padding: 0 13px; border-radius: 9px; border: 1.5px solid #2e2e34; background: #1b1b1f; color: #d2d2d7; font-size: 13px; font-weight: 700; cursor: pointer;">Reset</button>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'login',
+    firstTime: false,
+    isTeam: false,
+    // reviewer
+    tool: 'pin',
+    zoom: 1,
+    tab: 'mine',
+    swipe: false,
+    swipePos: 56,
+    showComments: true,
+    approved: false,
+    hoverProject: null,
+    composer: null,        // {n, x, y, tag, shape, attachment}
+    drawing: false,
+    drawPoints: [],
+    panX: 0, panY: 0,
+    fs: false,
+    briefOpen: false,
+    downloadOpen: false,
+    redrawId: null,
+    dlProjectId: null,
+    dlChecked: {},
+    draggingPinId: null,
+    pins: null,            // seeded in componentDidMount
+    nextN: 4,
+    hidden: {},            // pinId -> true (hidden on image)
+    // upload
+    uploaded: false,
+    uploadAsVideo: false,
+    reviewers: { Client:true, Architect:true, 'Interior Designer':true, 'Landscape Designer':false, Marketing:false, 'Real Estate Agent':false, 'Urban Planner':false, 'Lighting Designer':false, 'Project Manager':false, Other:false },
+    customReviewer: '',
+    supersedeId: 'v-living-r2',
+    // team / admin
+    teamRole: 'member',          // 'member' | 'admin'
+    expandedCompanies: {},
+    adminSearch: '',
+    teamSearch: '',
+    uploadProject: 'george',
+    uploadPickerOpen: false,
+    uploadSearch: '',
+    joined: { george:true, parkline:true },
+  };
+
+  componentDidMount() {
+    const seed = [
+      { id:'p1', n:1, mine:true, author:'You', role:'Architect', roleColor:'#e2241c', tag:'Material', x:30, y:66, text:'The dining chair upholstery is the wrong material. Please change to tan leather per the Finishes Schedule (FS-04).' },
+      { id:'p2', n:2, mine:true, author:'You', role:'Architect', roleColor:'#e2241c', tag:'Lighting', x:68, y:24, text:'Pendant lights over the island read too warm — please match the 3000K spec.' },
+      { id:'p3', n:3, mine:true, author:'You', role:'Architect', roleColor:'#e2241c', tag:'Layout', x:46, y:52, text:'Move the kitchen island 300mm toward the window to widen the walkway to 1100mm.', flagged:true, shape:[[39,46],[55,44],[58,57],[45,62],[37,55]] },
+      { id:'e1', n:4, mine:false, author:'Sarah Whitfield', role:'Interior Designer', roleColor:'#c026d3', tag:'Layout', x:52, y:54, text:'Keep the island where it is and extend the bench 300mm AWAY from the window for more prep space.', flagged:true },
+      { id:'e2', n:5, mine:false, author:'Marcus Lee', role:'Landscape Designer', roleColor:'#33a96e', tag:'Other', x:88, y:42, text:'Make the courtyard planting pop more.' },
+      { id:'e3', n:6, mine:false, author:'Elena Park', role:'Client', roleColor:'#c9a35b', tag:'Furniture', x:18, y:74, text:'Love the rug — could we see a darker timber floor option in the next round?' },
+      { id:'e4', n:7, mine:false, author:'Sarah Whitfield', role:'Interior Designer', roleColor:'#c026d3', tag:'Material', x:74, y:70, text:'Sofa fabric is perfect. No changes needed here.' },
+    ];
+    this.setState({ pins: seed });
+    try { const s = localStorage.getItem('iv_screen'); if (s) this.setState({ screen: s }); } catch(e){}
+  }
+
+  go(screen){ this.setState({ screen }); try { localStorage.setItem('iv_screen', screen); } catch(e){} }
+
+  icons(){
+    const E=React.createElement;
+    const svg=(ch,o)=>{ o=o||{}; return E('svg',{viewBox:'0 0 24 24',width:o.w||18,height:o.h||18,fill:'none',stroke:'currentColor',strokeWidth:o.sw||1.9,strokeLinecap:'round',strokeLinejoin:'round',style:{display:'block',flex:'none'}}, ch.map((c,i)=>E(c[0],{...c[1],key:i}))); };
+    const P=(d,extra)=>['path',{d,...(extra||{})}];
+    const C=(cx,cy,r)=>['circle',{cx,cy,r}];
+    const L=(x1,y1,x2,y2)=>['line',{x1,y1,x2,y2}];
+    return {
+      icPin: svg([P('M12 21.5c4-4.4 6-7.6 6-10.5a6 6 0 1 0-12 0c0 2.9 2 6.1 6 10.5z'), C(12,11,2.2)]),
+      icDraw: svg([P('M15.5 5.5l3 3'), P('M4 20l1.2-4 9.6-9.6 2.8 2.8L8 18.8 4 20z')]),
+      icPan: svg([P('M12 3v18M3 12h18'), P('M9.5 5.5L12 3l2.5 2.5M9.5 18.5L12 21l2.5-2.5M5.5 9.5L3 12l2.5 2.5M18.5 9.5L21 12l-2.5 2.5')]),
+      icFit: svg([P('M9 4H5a1 1 0 0 0-1 1v4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4')]),
+      icFull: svg([P('M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4')]),
+      icEye: svg([P('M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z'), C(12,12,2.7)]),
+      icCompare: svg([P('M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z'), L(12,5,12,19)]),
+      icDownload: svg([P('M12 3v11M8.5 10.5L12 14l3.5-3.5M5 20h14')]),
+      icCheck: svg([P('M5 12.5l4.5 4.5L19 7')]),
+      icSparkle: svg([P('M12 3.5l1.6 5.2 5.2 1.6-5.2 1.6L12 17l-1.6-5.1L5.2 10.3l5.2-1.6L12 3.5z'), P('M18.5 4l.5 1.6 1.6.5-1.6.5-.5 1.6-.5-1.6L16.4 6l1.6-.5z')]),
+      icMail: svg([P('M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z'), P('M3.5 7.5l8.5 6 8.5-6')]),
+      icClose: svg([P('M6 6l12 12M18 6L6 18')]),
+      icSearch: svg([C(11,11,7), L(16.2,16.2,21,21)]),
+      icPhoto: svg([P('M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z'), C(8.5,9.5,1.6), P('M4 17l5-4 4 3 3-2 5 4')]),
+      icPlusSm: svg([P('M12 6v12M6 12h12')],{w:16,h:16}),
+      icMinusSm: svg([P('M6 12h12')],{w:16,h:16}),
+    };
+  }
+
+  // ---- render image backgrounds (CSS placeholder "renders") ----
+  renderA(){ return "linear-gradient(180deg, #cfe2f2 0%, #e8eef2 38%, #cdbfae 38%, #b8a591 62%, #9c8a76 100%), repeating-linear-gradient(90deg, rgba(0,0,0,0.04) 0 2px, transparent 2px 60px)"; }
+  renderB(){ return "linear-gradient(180deg, #d8d0c2 0%, #e6dfd2 40%, #c2b09a 40%, #a8937c 70%, #8a755f 100%)"; }
+
+  roleLabel(){ return this.state.isTeam ? 'Ivolve Team' : 'Architect'; }
+
+  renderVals() {
+    const st = this.state;
+    const pins = st.pins || [];
+    const myPins = pins.filter(p=>p.mine);
+    const allPins = pins;
+
+    const tagColor = (tag) => ({
+      Material:['#1e2630','#7fb0e6'], Lighting:['#2a2417','#d6a94e'], Layout:['#241a2e','#b48ae6'],
+      Furniture:['#16271f','#5cc191'], Other:['#222229','#9a9aa2']
+    }[tag] || ['#222229','#9a9aa2']);
+
+    const markerStyle = (p, idx) => {
+      const hidden = st.hidden[p.id];
+      const bg = p.flagged ? '#dc2626' : (p.mine ? '#e2241c' : p.roleColor);
+      const draggable = p.mine && !st.approved;
+      const dragging = st.draggingPinId===p.id;
+      const base = {
+        position:'absolute', left:p.x+'%', top:p.y+'%',
+        transform: dragging ? 'translate(-50%,-100%) scale(1.18)' : 'translate(-50%,-100%)',
+        width:'32px', height:'32px', borderRadius:'50% 50% 50% 3px',
+        background: 'radial-gradient(120% 100% at 32% 22%, rgba(255,255,255,0.42), rgba(255,255,255,0) 52%), '+bg,
+        color:'#fff', fontWeight:800, fontSize:'14px', display: hidden?'none':'flex',
+        alignItems:'center', justifyContent:'center', cursor: draggable?(dragging?'grabbing':'grab'):'pointer',
+        boxShadow: dragging ? '0 2px 6px rgba(0,0,0,0.4), 0 14px 30px rgba(0,0,0,0.5), 0 0 0 4px rgba(226,36,28,0.25)' : '0 1px 2px rgba(0,0,0,0.30), 0 6px 16px rgba(0,0,0,0.34)',
+        border:'2px solid #fff', transition: dragging?'none':'transform 0.12s ease, box-shadow 0.12s ease',
+        animation: dragging?'none':'ivPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both', zIndex: dragging?20:5
+      };
+      return base;
+    };
+
+    const onTab = (t)=>()=>this.setState({tab:t, composer: t==='mine'?st.composer:null});
+
+    // pins shown on image
+    const tabPins = st.tab==='mine' ? myPins : allPins;
+    const visiblePins = (st.showComments? tabPins : []).map((p,i)=>({
+      ...p, markerStyle: markerStyle(p,i), title: (p.mine && !st.approved) ? 'Drag to move · click to select' : (p.author+': '+p.text),
+      onPinDown: (p.mine && !st.approved) ? (e)=>this.startPinDrag(e,p) : null,
+      onClick: (e)=>{ e.stopPropagation(); if(this._suppress){ this._suppress=false; return; } this.setState({tab: p.mine?'mine':st.tab}); }
+    }));
+
+    // right-panel list
+    const listPins = tabPins.map(p=>{
+      const [bg,fg] = tagColor(p.tag);
+      const hidden = st.hidden[p.id];
+      return {
+        ...p, roleColor: p.roleColor, hasShape: !!p.shape, attachment: p.attachment||null,
+        canEdit: p.mine && !st.approved,
+        onEdit: (e)=>{ e.stopPropagation(); this.editComment(p); },
+        cardStyle: { background: p.flagged?'#241718':'#17171b', border:'1.5px solid '+(p.flagged?'#5a2420':'#26262b'), borderRadius:'14px', padding:'14px 15px', marginBottom:'10px', cursor:'pointer' },
+        numStyle: { flex:'none', width:'28px', height:'28px', borderRadius:'50%', background: p.flagged?'#dc2626':(p.mine?'#e2241c':p.roleColor), color:'#fff', fontSize:'14px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center' },
+        tagStyle: { fontSize:'12px', fontWeight:800, padding:'3px 9px', borderRadius:'6px', background:bg, color:fg },
+        visLabel: hidden ? '○ Hidden on image — show' : '● Visible on image — hide',
+        onSelect: ()=>{}, onToggleVis: (e)=>{ e.stopPropagation(); this.setState(s=>({hidden:{...s.hidden,[p.id]: !s.hidden[p.id]}})); }
+      };
+    });
+
+    // ---- swipe geometry ----
+    const sw = st.swipe;
+    const swipeClipStyle = { position:'absolute', inset:0, overflow:'hidden', display: sw?'block':'none', clipPath:'inset(0 '+(100-st.swipePos)+'% 0 0)' };
+    const swipeHandleStyle = { position:'absolute', top:0, bottom:0, left:st.swipePos+'%', width:'4px', background:'#fff', display: sw?'flex':'none', alignItems:'center', justifyContent:'center', cursor:'ew-resize', zIndex:8, boxShadow:'0 0 8px rgba(0,0,0,0.3)' };
+
+    // ---- stage style (zoom + pan) ----
+    const stageStyle = {
+      position:'relative', width: (820*st.zoom)+'px', height:(540*st.zoom)+'px',
+      background:'#222', borderRadius:'4px', overflow:'hidden', boxShadow:'0 18px 50px rgba(0,0,0,0.5)',
+      cursor: st.tool==='pin'?'crosshair':(st.tool==='sketch'?'crosshair':'grab'),
+      transform:'translate('+st.panX+'px,'+st.panY+'px)', flex:'none'
+    };
+    const centerStyle = st.fs
+      ? { position:'fixed', inset:0, zIndex:9999, display:'flex', flexDirection:'column', background:'#1b1f26' }
+      : { flex:1, minWidth:0, display:'flex', flexDirection:'column', background:'#1b1f26' };
+
+    // ---- freehand markup overlay (committed shapes + live draft) ----
+    const shapePins = (st.showComments ? tabPins : []).filter(p=>p.shape && !st.hidden[p.id]);
+    const toPath = (pts)=> 'M '+pts.map(p=>p[0].toFixed(2)+' '+p[1].toFixed(2)).join(' L ')+' Z';
+    const mkPath=(d,o)=>React.createElement('path',{ d, fill:o.fill||'none', stroke:o.stroke, strokeWidth:o.sw, vectorEffect:'non-scaling-stroke', strokeLinejoin:'round', strokeLinecap:'round', strokeDasharray:o.dash, opacity:o.op, key:o.key });
+    const shapeEls=[];
+    shapePins.forEach(p=>{
+      const col = p.flagged?'#ff453a':(p.mine?'#ff3b30':p.roleColor);
+      const d=toPath(p.shape);
+      shapeEls.push(mkPath(d,{ stroke:'rgba(0,0,0,0.55)', sw:5, key:p.id+'u' }));
+      shapeEls.push(mkPath(d,{ stroke:col, sw:2.6, fill:(p.flagged?'rgba(255,69,58,0.10)':'rgba(255,59,48,0.10)'), key:p.id+'t' }));
+    });
+    let draftEls=[];
+    if(st.drawing && st.drawPoints.length>1){
+      const d='M '+st.drawPoints.map(p=>p[0].toFixed(2)+' '+p[1].toFixed(2)).join(' L ');
+      draftEls=[ mkPath(d,{ stroke:'#000', sw:6, op:0.6, key:'dh' }), mkPath(d,{ stroke:'#ffffff', sw:3, key:'dc' }) ];
+    } else if(st.composer && st.composer.shape){
+      const d=toPath(st.composer.shape);
+      draftEls=[ mkPath(d,{ stroke:'#000', sw:6, op:0.55, key:'dh' }), mkPath(d,{ stroke:'#ffffff', sw:3, fill:'rgba(255,255,255,0.10)', dash:'5 3', key:'dc' }) ];
+    }
+    const markupSvg = React.createElement('svg', { viewBox:'0 0 100 100', preserveAspectRatio:'none', style:{ position:'absolute', inset:0, width:'100%', height:'100%', pointerEvents:'none', zIndex:4, overflow:'visible' } }, ...shapeEls, ...draftEls);
+
+    const draftMarkerStyle = (st.composer && st.composer.x!=null)
+      ? { position:'absolute', left:st.composer.x+'%', top:st.composer.y+'%', transform:'translate(-50%,-100%)', width:'34px', height:'34px', borderRadius:'50% 50% 50% 2px', background:'#c9a35b', color:'#fff', fontWeight:800, fontSize:'15px', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 3px 12px rgba(0,0,0,0.45)', border:'2.5px solid #fff', zIndex:7 }
+      : { display:'none' };
+
+    // tool button styles
+    const toolBtn = (active)=>({ display:'flex', alignItems:'center', gap:'7px', padding:'0 13px', height:'38px', border:'none', borderRadius:'8px', fontSize:'14px', fontWeight:700, cursor:'pointer', background: active?'#fff':'transparent', color: active?'#16191d':'#cfd5de' });
+
+    const composerOpen = !!st.composer;
+    const tagChoices = ['Material','Lighting','Layout','Furniture','Other'].map(t=>{
+      const [bg,fg]=tagColor(t); const active = st.composer && st.composer.tag===t;
+      return { label:t, style:{ fontSize:'13px', fontWeight:700, padding:'6px 11px', borderRadius:'100px', border:'1.5px solid '+(active?fg:'#26262b'), background: active?bg:'#17171b', color: active?fg:'#a6a6ac', cursor:'pointer' }, onPick:()=>this.setState(s=>({composer:{...s.composer, tag:t}})) };
+    });
+
+    const aiSummary = [
+      { tag:'Material', text:'Change dining chair upholstery to tan leather (FS-04).' },
+      { tag:'Lighting', text:'Re-render island pendants at 3000K colour temperature.' },
+      { tag:'Layout', text:'RESOLVE FIRST: island position conflict (Architect vs Interior Designer).' },
+      { tag:'Furniture', text:'Prepare a darker timber floor variant for next round (Client request).' },
+    ].map(s=>{ const [bg,fg]=tagColor(s.tag); return { ...s, tagStyle:{ flex:'none', fontSize:'11px', fontWeight:800, padding:'3px 8px', borderRadius:'6px', background:bg, color:fg, height:'fit-content' } }; });
+
+    const requestedRoles = [
+      ['Client',true],['Architect',true],['Interior Designer',true],['Landscape Designer',true],['Lighting Designer',false]
+    ].map(([label,on])=>({ label, bg: on?'#241413':'#1e1e22', fg: on?'#e2241c':'#6e6e75' }));
+
+    return {
+      // screens
+      isLogin: st.screen==='login', isProjects: st.screen==='projects', isReviewer: st.screen==='reviewer',
+      isUpload: st.screen==='upload', isAdmin: st.screen==='admin', isTeamLogin: st.screen==='teamlogin',
+      ...this.uploadVals(), ...this.adminVals(), ...this.dlVals(), ...this.icons(),
+
+      // rail identity
+      railRole: st.isTeam ? (st.teamRole==='admin' ? 'Administrator' : 'Ivolve Team') : 'Architect',
+      railName: st.isTeam ? (st.teamRole==='admin' ? 'Priya Nair' : 'Tom Reeves') : 'David Chen',
+      railIsTeam: st.isTeam, railIsAdmin: st.isTeam && st.teamRole==='admin',
+      isTeamProjects: st.screen==='projects' && st.isTeam, isConsultantProjects: st.screen==='projects' && !st.isTeam,
+      ...this.teamProjectsVals(),
+
+      // login
+      isFirstTime: st.firstTime,
+      loginTitle: st.firstTime ? 'Set your password' : 'Sign in to review',
+      loginSubtitle: st.firstTime ? 'Welcome to Ivolve Review. Create a password to secure your account — you only do this once.' : 'Access your projects and review the latest CGIs and videos.',
+      passwordLabel: st.firstTime ? 'Create password' : 'Password',
+      loginButton: st.firstTime ? 'Create password & continue' : 'Sign in',
+      firstTimeToggleLabel: st.firstTime ? '← Back to sign in' : 'First time here? Set up your password',
+      signIn: ()=>{ this.setState({isTeam:false}); this.go('projects'); },
+      enterAsTeam: ()=>this.go('teamlogin'),
+      backToConsultant: ()=>this.go('login'),
+      enterAsMember: ()=>{ this.setState({isTeam:true, teamRole:'member'}); this.go('upload'); },
+      enterAsAdmin: ()=>{ this.setState({isTeam:true, teamRole:'admin'}); this.go('admin'); },
+      toggleFirstTime: ()=>this.setState(s=>({firstTime:!s.firstTime})),
+
+      // projects
+      userName: st.isTeam ? (st.teamRole==='admin'?'Priya Nair':'Tom Reeves') : 'David Chen',
+      roleLabel: this.roleLabel(),
+      navigate: (s)=>this.go(s),
+      totalNeedsReview: 5, projectCount: 4,
+      clearHover: ()=>this.setState({hoverProject:null}),
+      projects: this.projectData(),
+
+      // reviewer header
+      assetTitle: 'Living Room — View 01', assetRev:'R3', assetType:'Living', prevRev:'R2',
+      assetFilename:'550_George_St_View01_Living_R3.jpg', assetUploaded:'Today, 9:42 AM',
+      backToProjects: ()=>this.go('projects'),
+      toggleBrief: ()=>this.setState(s=>({briefOpen:!s.briefOpen})),
+      briefOpen: st.briefOpen,
+      artistNoteCount: 2,
+      briefTabBtnStyle: { width:'40px', height:'40px', borderRadius:'11px', border:'none', display:'flex', alignItems:'center', justifyContent:'center', background: st.briefOpen?'#e2241c':'#1f1f24', color: st.briefOpen?'#fff':'#cfd5de', cursor:'pointer' },
+      toggleDownload: ()=>this.setState(s=>({downloadOpen:!s.downloadOpen})),
+      downloadOpen: st.downloadOpen,
+      downloadOriginal: ()=>{ this.setState({downloadOpen:false}); this._toast('Preparing PDF — the original '+'R3'+' render (550_George_St_View01_Living_R3.pdf) will download.'); },
+      downloadMarkup: ()=>{ this.setState({downloadOpen:false}); this._toast('Preparing PDF — your markups baked onto the render (550_George_St_View01_Living_R3_markup.pdf) will download.'); },
+      toggleSwipe: ()=>this.setState(s=>({swipe:!s.swipe})),
+      swipeBtnStyle: { display:'flex', alignItems:'center', gap:'8px', height:'44px', padding:'0 16px', borderRadius:'10px', border:'1.5px solid '+(st.swipe?'#e2241c':'#2e2e34'), background: st.swipe?'#241413':'#17171b', fontSize:'15px', fontWeight:700, color: st.swipe?'#e2241c':'#d2d2d7', cursor:'pointer' },
+      submitReview: ()=>{ if(st.composer){ this._toast('Please finish or cancel your open note before submitting.'); return; } this.setState({tab:'ai'}); this._toast('Review submitted ✓  A PDF of your markups was emailed to the Ivolve team, and the review group was notified.'); },
+      approve: ()=>this.setState(s=>({approved:!s.approved})),
+      approveLabel: st.approved ? 'Approved — locked' : 'Approve',
+      approveBtnStyle: { display:'flex', alignItems:'center', gap:'8px', height:'44px', padding:'0 18px', borderRadius:'10px', border:'none', background: st.approved?'#33a96e':'#33a96e', color:'#fff', fontSize:'15px', fontWeight:700, cursor:'pointer', boxShadow:'0 2px 8px rgba(51,169,110,0.3)' },
+
+      // artist notes
+      artistNotes: [
+        { initials:'PN', name:'Priya Nair', time:'Today, 9:42 AM', text:'R3 addresses the kitchen joinery comments from R2. Note: view photography is still pending from the photographer, so the window currently shows a placeholder sky.' },
+        { initials:'PN', name:'Priya Nair', time:'Today, 9:43 AM', text:'Please focus this round on materials and the island layout. Lighting is not yet final.' },
+      ],
+      requestedRoles,
+
+      // toolbar
+      setToolPin: ()=>this.setState({tool:'pin'}),
+      setToolSketch: ()=>this.setState({tool:'sketch'}),
+      setToolPan: ()=>this.setState({tool:'pan'}),
+      toolPinStyle: toolBtn(st.tool==='pin'), toolSketchStyle: toolBtn(st.tool==='sketch'), toolPanStyle: toolBtn(st.tool==='pan'),
+      zoomIn: ()=>this.setState(s=>({zoom: Math.min(3, +(s.zoom+0.2).toFixed(2))})),
+      zoomOut: ()=>this.setState(s=>({zoom: Math.max(0.6, +(s.zoom-0.2).toFixed(2))})),
+      zoomReset: ()=>this.setState({zoom:1}),
+      zoomLabel: Math.round(st.zoom*100)+'%',
+      toggleShowComments: ()=>this.setState(s=>({showComments:!s.showComments})),
+      showCommentsLabel: st.showComments ? 'Notes shown' : 'Notes hidden',
+      showCommentsBtnStyle: { display:'flex', alignItems:'center', gap:'7px', height:'38px', padding:'0 14px', borderRadius:'10px', border:'none', background:'#2a2f38', color:'#cfd5de', fontSize:'14px', fontWeight:700, cursor:'pointer' },
+      toggleFs: ()=>this.setState(s=>({fs:!s.fs})),
+      fsLabel: st.fs ? 'Exit' : 'Full screen',
+      fsBtnStyle: { display:'flex', alignItems:'center', gap:'7px', height:'38px', padding:'0 14px', borderRadius:'10px', border:'none', background: st.fs?'#e2241c':'#2a2f38', color: st.fs?'#fff':'#cfd5de', fontSize:'14px', fontWeight:700, cursor:'pointer' },
+
+      // stage
+      stageRef: (el)=>{ this._stage = el; },
+      stageStyle, centerStyle, currentRender: this.renderA(), prevRender: this.renderB(),
+      stageWpx: (820*st.zoom)+'px', stageHpx:(540*st.zoom)+'px',
+      swipeClipStyle, swipeHandleStyle,
+      onStageClick: (e)=>this.onStageClick(e),
+      onStageDown: (e)=>this.onStageDown(e),
+      onWheel: (e)=>this.onWheel(e),
+      startSwipe: (e)=>this.startSwipe(e), stopProp: (e)=>e.stopPropagation(),
+      markupSvg, draftMarkerStyle, visiblePins,
+      stageHint: st.composer ? 'Add your comment in the panel — a note can’t be saved without it' : (st.tool==='pin' ? 'Click to add a note · drag any of your pins to move them' : (st.tool==='sketch' ? 'Click and drag to draw a freehand shape around an area' : (st.swipe?'Drag the handle to compare R3 with R2':'Scroll to zoom · drag to pan · hold middle mouse to pan'))),
+
+      // right tabs
+      setTabMine: onTab('mine'), setTabEveryone: onTab('everyone'), setTabAi: onTab('ai'),
+      tab: st.tab, isMineTab: st.tab==='mine', isAiTab: st.tab==='ai',
+      showCommentList: st.tab!=='ai',
+      tabMineStyle: this.tabStyle(st.tab==='mine'), tabEveryoneStyle: this.tabStyle(st.tab==='everyone'), tabAiStyle: this.tabStyle(st.tab==='ai'),
+      myCount: myPins.length, everyoneCount: allPins.length, hasConflict: true,
+      listPins,
+
+      // ai
+      aiSummary, notifyConflict: ()=>{ this._toast('Email sent to David Chen (Architect) and Sarah Whitfield (Interior Designer) requesting resolution.'); },
+
+      // composer
+      composerOpen, composerN: st.composer? st.composer.n : '',
+      composerHeader: (st.composer && st.composer.editId) ? ('Edit note '+(st.composer.n)) : ((st.composer && st.composer.shape) ? 'New note · marked area' : 'New note · pinned point'),
+      composerSaveLabel: (st.composer && st.composer.editId) ? ('Update note '+(st.composer.n)) : ('Save note '+(st.composer? st.composer.n : '')),
+      composerCanRedraw: !!(st.composer && st.composer.editId && st.composer.shape),
+      onRedrawShape: ()=>{ const c=this.state.composer; if(!c) return; this.setState({ redrawId: c.editId, tool:'sketch', composer:null }); this._toast('Draw the new area on the image to replace the marked shape.'); },
+      composerRef: (el)=>{ this._composer = el; },
+      tagChoices,
+      attachLabel: (st.composer && st.composer.attachment) ? st.composer.attachment : 'Attach a reference file',
+      attachBtnStyle: { display:'flex', alignItems:'center', gap:'8px', width:'100%', marginTop:'10px', height:'42px', padding:'0 13px', borderRadius:'10px', border:'1.5px '+((st.composer&&st.composer.attachment)?'solid #e2241c':'dashed #3a3a41'), background:(st.composer&&st.composer.attachment)?'#241413':'#17171b', color:(st.composer&&st.composer.attachment)?'#e2241c':'#a6a6ac', fontSize:'14px', fontWeight:700, cursor:'pointer', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' },
+      attachRef: ()=>this.attachRef(),
+      cancelComposer: ()=>this.setState({composer:null, drawing:false, drawPoints:[]}),
+      saveComment: ()=>this.saveComment(),
+    };
+  }
+
+  tabStyle(active){ return { flex:1, height:'46px', border:'none', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', background: active?'#e2241c':'transparent', color: active?'#fff':'#a6a6ac', fontSize:'14px', fontWeight:700, cursor:'pointer' }; }
+
+  _toast(msg){ try { const d=document.createElement('div'); d.textContent=msg; d.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1c1c20;color:#fff;padding:14px 22px;border-radius:12px;font:600 15px Manrope,sans-serif;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.3);max-width:520px;text-align:center;'; document.body.appendChild(d); setTimeout(()=>d.remove(),3800);}catch(e){} }
+
+  relPct(e){ const el=this._stage; if(!el) return null; const r=el.getBoundingClientRect(); return { px:Math.max(0,Math.min(100,((e.clientX-r.left)/r.width)*100)), py:Math.max(0,Math.min(100,((e.clientY-r.top)/r.height)*100)) }; }
+
+  onStageClick(e){
+    if(this._suppress){ this._suppress=false; return; }
+    if(this.state.tool!=='pin') return;
+    if(this.state.composer) return;
+    if(this.state.approved){ this._toast('This asset is approved and locked. An admin must unlock it to add notes.'); return; }
+    const c=this.relPct(e); if(!c) return;
+    this.openComposer({ x:c.px, y:c.py, shape:null });
+  }
+
+  onStageDown(e){
+    if(e.button===1 || this.state.tool==='pan'){ e.preventDefault(); this.startPan(e); return; }
+    if(this.state.tool==='sketch' && e.button===0){
+      if(this.state.approved){ this._toast('This asset is approved and locked. An admin must unlock it to add notes.'); return; }
+      if(this.state.composer) return;
+      e.preventDefault(); const c=this.relPct(e); if(!c) return;
+      this.setState({ drawing:true, drawPoints:[[c.px,c.py]] });
+      window.addEventListener('mousemove', this._drawMove);
+      window.addEventListener('mouseup', this._drawUp);
+    }
+  }
+
+  _drawMove = (e)=>{ const c=this.relPct(e); if(!c) return; this.setState(s=>{ const last=s.drawPoints[s.drawPoints.length-1]; if(last && Math.hypot(c.px-last[0], c.py-last[1])<0.7) return null; return { drawPoints:[...s.drawPoints, [c.px,c.py]] }; }); };
+  _drawUp = (e)=>{ window.removeEventListener('mousemove', this._drawMove); window.removeEventListener('mouseup', this._drawUp); const pts=this.state.drawPoints; this._suppress=true; if(pts.length>=4){ if(this.state.redrawId){ const id=this.state.redrawId; this.setState(s=>({ drawing:false, redrawId:null, drawPoints:[], tool:'pin', pins: s.pins.map(p=> p.id===id ? {...p, shape:pts} : p) })); this._toast('Marked area updated.'); } else { const cx=pts.reduce((a,p)=>a+p[0],0)/pts.length; const cy=Math.min(...pts.map(p=>p[1])); this.setState({drawing:false}); this.openComposer({ x:cx, y:cy, shape:pts }); } } else { this.setState({drawing:false, drawPoints:[]}); } };
+
+  startPinDrag(e, pin){
+    if(this.state.tool==='pan') return;
+    e.stopPropagation(); e.preventDefault();
+    const el=this._stage; if(!el) return; const r=el.getBoundingClientRect();
+    this._pinDrag={ id:pin.id, sx:e.clientX, sy:e.clientY, ox:pin.x, oy:pin.y, shape: pin.shape?pin.shape.map(pt=>[pt[0],pt[1]]):null, rw:r.width, rh:r.height, moved:false };
+    try { document.body.style.cursor='grabbing'; } catch(err){}
+    this.setState({ draggingPinId: pin.id });
+    window.addEventListener('mousemove', this._pinMove);
+    window.addEventListener('mouseup', this._pinUp);
+  }
+  _pinMove = (e)=>{ const d=this._pinDrag; if(!d) return; const dx=((e.clientX-d.sx)/d.rw)*100, dy=((e.clientY-d.sy)/d.rh)*100; if(Math.abs(e.clientX-d.sx)+Math.abs(e.clientY-d.sy)>3) d.moved=true; const cl=(v)=>Math.max(0,Math.min(100,v)); const nx=cl(d.ox+dx), ny=cl(d.oy+dy); const ns=d.shape?d.shape.map(pt=>[cl(pt[0]+dx),cl(pt[1]+dy)]):null; this.setState(s=>({ pins: s.pins.map(p=> p.id===d.id ? {...p, x:nx, y:ny, shape: ns!==null?ns:p.shape} : p) })); };
+  _pinUp = ()=>{ window.removeEventListener('mousemove', this._pinMove); window.removeEventListener('mouseup', this._pinUp); try { document.body.style.cursor=''; } catch(err){} const moved=this._pinDrag && this._pinDrag.moved; if(moved) this._suppress=true; this._pinDrag=null; this.setState({draggingPinId:null}); if(moved) this._toast('Note moved.'); };
+
+  startPan(e){ this._panStart={ sx:e.clientX, sy:e.clientY, px:this.state.panX, py:this.state.panY }; window.addEventListener('mousemove', this._panMove); window.addEventListener('mouseup', this._panUp); }
+  _panMove = (e)=>{ const p=this._panStart; if(!p) return; this.setState({ panX:p.px+(e.clientX-p.sx), panY:p.py+(e.clientY-p.sy) }); };
+  _panUp = ()=>{ window.removeEventListener('mousemove', this._panMove); window.removeEventListener('mouseup', this._panUp); this._panStart=null; this._suppress=true; };
+
+  onWheel(e){ e.preventDefault(); const dir = e.deltaY<0 ? 0.12 : -0.12; this.setState(s=>({ zoom: Math.max(0.6, Math.min(3, +(s.zoom+dir).toFixed(2))) })); }
+
+  startSwipe(e){ e.stopPropagation(); e.preventDefault(); window.addEventListener('mousemove', this._swipeMove); window.addEventListener('mouseup', this._swipeUp); }
+  _swipeMove = (e)=>{ const el=this._stage; if(!el) return; const r=el.getBoundingClientRect(); const pos=((e.clientX-r.left)/r.width)*100; this.setState({ swipePos: Math.max(0, Math.min(100, pos)) }); };
+  _swipeUp = ()=>{ window.removeEventListener('mousemove', this._swipeMove); window.removeEventListener('mouseup', this._swipeUp); this._suppress=true; };
+
+  openComposer(partial){ this.setState(s=>({ tab:'mine', composer:{ n:s.nextN, tag:'Material', attachment:null, ...partial } })); setTimeout(()=>{ if(this._composer) this._composer.focus(); },60); }
+  editComment(p){
+    this.setState({ tab:'mine', composer:{ editId:p.id, n:p.n, x:p.x, y:p.y, tag:p.tag, shape:p.shape||null, attachment:p.attachment||null } });
+    setTimeout(()=>{ if(this._composer){ this._composer.value=p.text; this._composer.focus(); } },60);
+  }
+  attachRef(){ this.setState(s=>({ composer:{ ...s.composer, attachment: s.composer.attachment? null : 'reference_tan-leather_FS-04.jpg' } })); }
+
+  saveComment(){
+    const c=this.state.composer; const txt=this._composer? this._composer.value.trim() : '';
+    if(!txt){ if(this._composer) this._composer.focus(); this._toast('Please add a comment describing this mark before saving.'); return; }
+    if(c.editId){
+      this.setState(s=>({ pins: s.pins.map(p=> p.id===c.editId ? { ...p, text:txt, tag:c.tag, attachment:c.attachment||null } : p), composer:null, drawPoints:[] }));
+      return;
+    }
+    const np={ id:'p'+Date.now(), n:c.n, mine:true, author:'You', role:'Architect', roleColor:'#e2241c', tag:c.tag, x:c.x, y:c.y, shape:c.shape||null, attachment:c.attachment||null, text:txt };
+    this.setState(s=>({ pins:[...s.pins, np], nextN:s.nextN+1, composer:null, drawPoints:[] }));
+  }
+
+  projectsMaster(){
+    return [
+      { id:'george', name:'550 George Street', code:'GEO-550', meta:'Sydney CBD · 42-level residential tower', reviewers:6, render:this.renderA() },
+      { id:'wharf', name:'Barangaroo Wharf', code:'BAR-12', meta:'Sydney · Mixed-use waterfront precinct', reviewers:4, render:this.renderB() },
+      { id:'aurora', name:'Aurora Place', code:'AUR-21', meta:'Sydney · Commercial tower lobby', reviewers:5, render:this.renderA() },
+      { id:'parkline', name:'The Parkline Residences', code:'PRK-08', meta:'Melbourne · 8-level boutique apartments', reviewers:5, render:this.renderB() },
+    ];
+  }
+  projName(){ const p=this.projectsMaster().find(p=>p.id===this.state.uploadProject); return p?p.name:'550 George Street'; }
+
+  teamProjectsVals(){
+    const st=this.state;
+    const q=(st.teamSearch||'').toLowerCase().trim();
+    const list=this.projectsMaster().filter(p=> !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q));
+    const joinedCount=Object.keys(st.joined).filter(k=>st.joined[k]).length;
+    return {
+      teamSearchVal: st.teamSearch,
+      onTeamSearch: (e)=>this.setState({teamSearch:e.target.value}),
+      teamJoinedCount: joinedCount,
+      teamProjects: list.map(p=>{
+        const joined=!!st.joined[p.id];
+        return { ...p, joined,
+          onOpen: ()=>this.go('reviewer'),
+          onJoin: (e)=>{ e.stopPropagation(); this.setState(s=>({joined:{...s.joined,[p.id]:!s.joined[p.id]}})); if(!joined) this._toast('You\u2019ve been added to '+p.name+'. It will now appear in your project list.'); },
+          joinBtnStyle: { height:'42px', padding:'0 16px', borderRadius:'10px', border: joined?'1.5px solid #2e2e34':'none', background: joined?'#17171b':'#e2241c', color: joined?'#33a96e':'#fff', fontSize:'14px', fontWeight:700, cursor:'pointer', flex:'none' },
+          joinLabel: joined?'✓ On this project':'＋ Add me' };
+      }),
+    };
+  }
+
+  uploadVals(){
+    const st=this.state;
+    const filename = st.uploadAsVideo ? '550_George_St_View03_Aerial_Flythrough_R2.mp4' : '550_George_St_View01_Living_R3.jpg';
+    const parsed = st.uploadAsVideo
+      ? [['Project',this.projName(),'#e2241c'],['View','03','#f4f4f2'],['Type','Aerial Flythrough','#c9a35b'],['Revision','R2 · Revision 2','#33a96e']]
+      : [['Project',this.projName(),'#e2241c'],['View','01','#f4f4f2'],['Type','Living','#c9a35b'],['Revision','R3 · Revision 3','#33a96e']];
+    const reviewerList = ['Client','Architect','Interior Designer','Landscape Designer','Marketing','Real Estate Agent','Urban Planner','Lighting Designer','Project Manager','Other'].map(r=>{
+      const on = st.reviewers[r];
+      return { label:r, isOther: r==='Other', onToggle:()=>this.setState(s=>({reviewers:{...s.reviewers,[r]:!s.reviewers[r]}})),
+        boxStyle:{ width:'24px', height:'24px', borderRadius:'7px', border:'2px solid '+(on?'#e2241c':'#3a3a41'), background:on?'#e2241c':'#17171b', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'15px', fontWeight:800, flex:'none' },
+        rowStyle:{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'12px', border:'1.5px solid '+(on?'#3a2420':'#26262b'), background:on?'#1a1411':'#17171b', cursor:'pointer' },
+        checked:on };
+    });
+    const versions = [
+      { id:'v-living-r2', label:'View 01 · Living', rev:'R2', when:'4 days ago', swatch:'#b8a591', render:this.renderB() },
+      { id:'v-kitchen-r2', label:'View 02 · Kitchen', rev:'R2', when:'4 days ago', swatch:'#c2b09a', render:this.renderA() },
+      { id:'v-facade-r1', label:'View 04 · Facade', rev:'R1', when:'1 wk ago', swatch:'#9c8a76', render:this.renderB() },
+    ].map(v=>({ ...v, selected: st.supersedeId===v.id, onPick:()=>this.setState({supersedeId:v.id}),
+      cardStyle:{ display:'flex', gap:'12px', alignItems:'center', padding:'10px', borderRadius:'12px', border:'2px solid '+(st.supersedeId===v.id?'#e2241c':'#26262b'), background:st.supersedeId===v.id?'#1a1411':'#17171b', cursor:'pointer' } }));
+    return {
+      upFilename: filename,
+      upParsed: parsed.map(([k,v,c])=>({ k, v, style:{ fontSize:'14px', fontWeight:800, color:c } })),
+      upUploaded: st.uploaded, upNotUploaded: !st.uploaded,
+      upKind: st.uploadAsVideo ? 'video' : 'CGI image',
+      upDrop: ()=>this.setState({uploaded:true}),
+      upReset: ()=>this.setState({uploaded:false}),
+      upRender: st.uploadAsVideo ? this.renderB() : this.renderA(),
+      upIsVideo: st.uploadAsVideo,
+      upSetImage: ()=>this.setState({uploadAsVideo:false, uploaded:false}),
+      upSetVideo: ()=>this.setState({uploadAsVideo:true, uploaded:false}),
+      upImgTabStyle: this.segStyle(!st.uploadAsVideo), upVidTabStyle: this.segStyle(st.uploadAsVideo),
+      reviewerList, versions,
+      upProjectName: this.projName(),
+      upPickerOpen: st.uploadPickerOpen,
+      upTogglePicker: ()=>this.setState(s=>({uploadPickerOpen:!s.uploadPickerOpen})),
+      upSearchVal: st.uploadSearch,
+      onUpSearch: (e)=>this.setState({uploadSearch:e.target.value}),
+      upProjectOptions: this.projectsMaster().filter(p=>{ const q=(st.uploadSearch||'').toLowerCase().trim(); return !q||p.name.toLowerCase().includes(q)||p.code.toLowerCase().includes(q); }).map(p=>({ ...p, current: p.id===st.uploadProject, onPick:()=>this.setState({uploadProject:p.id, uploadPickerOpen:false, uploadSearch:''}),
+        optStyle:{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'10px', cursor:'pointer', background: p.id===st.uploadProject?'#241413':'transparent', border:'1px solid '+(p.id===st.uploadProject?'#3a2420':'transparent') } })),
+      upSubmit: ()=>{ const picked=Object.keys(st.reviewers).filter(k=>st.reviewers[k]).length; this._toast('Upload submitted ✓  Email alert sent to '+picked+' reviewer group'+(picked===1?'':'s')+' across the project team.'); },
+    };
+  }
+
+  segStyle(active){ return { flex:1, height:'42px', border:'none', borderRadius:'9px', background: active?'#2a2a30':'transparent', color: active?'#f4f4f2':'#a6a6ac', fontSize:'15px', fontWeight:700, cursor:'pointer', boxShadow: active?'0 1px 3px rgba(0,0,0,0.12)':'none' }; }
+
+  adminVals(){
+    const st=this.state;
+    const q=(st.adminSearch||'').toLowerCase().trim();
+    const projStatusStyle=(s)=>({ fontSize:'13px', fontWeight:800, color: s==='Active'?'#33a96e':(s==='On hold'?'#c9a35b':'#7a7a82'), background: s==='Active'?'#16271f':(s==='On hold'?'#2a2417':'#1e1e22'), padding:'4px 10px', borderRadius:'6px' });
+    const allProjects=[
+      { name:'550 George Street', code:'GEO-550', status:'Active', reviewers:6, updated:'12 min ago' },
+      { name:'Barangaroo Wharf', code:'BAR-12', status:'Active', reviewers:4, updated:'1 hr ago' },
+      { name:'Aurora Place', code:'AUR-21', status:'Active', reviewers:5, updated:'Today' },
+      { name:'The Parkline Residences', code:'PRK-08', status:'Active', reviewers:5, updated:'Yesterday' },
+      { name:'Quay Quarter Lofts', code:'QQL-03', status:'On hold', reviewers:3, updated:'3 days ago' },
+      { name:'Marina Bay Towers', code:'MBT-02', status:'Archived', reviewers:2, updated:'2 wks ago' },
+    ];
+    const match=(p)=> !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q);
+    const mapP=(p)=>({ ...p, statusStyle:projStatusStyle(p.status) });
+    const activeProjects=allProjects.filter(p=>p.status==='Active'&&match(p)).sort((a,b)=>a.name.localeCompare(b.name)).map(mapP);
+    const inactiveProjects=allProjects.filter(p=>p.status!=='Active'&&match(p)).sort((a,b)=>a.name.localeCompare(b.name)).map(mapP);
+
+    // consultants grouped by company
+    const conStatusStyle=(s)=>({ fontSize:'13px', fontWeight:800, color: s==='Active'?'#33a96e':'#c9a35b', background: s==='Active'?'#16271f':'#2a2417', padding:'4px 10px', borderRadius:'6px' });
+    const people=[
+      ['David Chen','Architect','d.chen@harlowarchitects.com','Active','Harlow Architects','DC','#e2241c'],
+      ['Aisha Khan','Architect','a.khan@harlowarchitects.com','Active','Harlow Architects','AK','#c98a3c'],
+      ['Sarah Whitfield','Interior Designer','sarah@whitfieldinteriors.com','Active','Whitfield Interiors','SW','#c026d3'],
+      ['Olivia Grant','Interior Designer','olivia@whitfieldinteriors.com','Invited','Whitfield Interiors','OG','#8e6bd6'],
+      ['Marcus Lee','Landscape Designer','m.lee@leelandscape.com.au','Active','Lee Landscape','ML','#33a96e'],
+      ['Elena Park','Client','elena.park@georgest.dev','Active','George St Developments','EP','#c9a35b'],
+      ['Nina Patel','Project Manager','nina@georgest.dev','Active','George St Developments','NP','#2f9bb5'],
+      ['James Wood','Lighting Designer','james@woodlighting.com','Invited','Wood Lighting','JW','#7a7a82'],
+    ];
+    const byCo={};
+    people.forEach(p=>{ (byCo[p[4]] = byCo[p[4]]||[]).push(p); });
+    const companyGroups = Object.keys(byCo).sort((a,b)=>a.localeCompare(b)).map(co=>{
+      const mem = byCo[co];
+      const expanded = !!st.expandedCompanies[co];
+      const roles = [...new Set(mem.map(m=>m[1]))];
+      const activeN = mem.filter(m=>m[3]==='Active').length;
+      const invitedN = mem.length - activeN;
+      const statusLabel = invitedN===0 ? 'All active' : (activeN===0 ? 'Invited' : activeN+' active · '+invitedN+' invited');
+      const badge = co.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      return {
+        name: co, badge,
+        summary: roles.join(' · '),
+        countLabel: mem.length + (mem.length===1?' person':' people'),
+        statusLabel,
+        statusStyle: { fontSize:'13px', fontWeight:800, color: invitedN===0?'#33a96e':'#c9a35b', background: invitedN===0?'#16271f':'#2a2417', padding:'4px 10px', borderRadius:'6px', flex:'none' },
+        chevronStyle: { display:'inline-block', width:'16px', color:'#7a7a82', fontSize:'15px', transition:'transform .15s ease', transform: expanded?'rotate(90deg)':'none' },
+        expanded,
+        onToggle: ()=>this.setState(s=>({ expandedCompanies:{ ...s.expandedCompanies, [co]: !s.expandedCompanies[co] } })),
+        members: mem.map(c=>({ name:c[0], role:c[1], email:c[2], status:c[3], initials:c[5], avatar:c[6],
+          statusStyle: conStatusStyle(c[3]), pending: c[3]==='Invited',
+          onInvite:(e)=>{ e.stopPropagation(); this._toast('Invite email sent to '+c[0]+' ('+c[2]+') with a secure first-time sign-in link.'); },
+          onReset:(e)=>{ e.stopPropagation(); this._toast('Password reset link sent to '+c[2]+'.'); } }))
+      };
+    });
+
+    return {
+      activeProjects, inactiveProjects,
+      noActive: activeProjects.length===0, noInactive: inactiveProjects.length===0,
+      adminSearchVal: st.adminSearch,
+      onAdminSearch: (e)=>this.setState({adminSearch: e.target.value}),
+      companyGroups,
+      addProject: ()=>this._toast('New project form would open here.'),
+      addConsultant: ()=>this._toast('Add consultant form would open here.') };
+  }
+
+  projectAssets(id){
+    const A=this.renderA(), B=this.renderB();
+    const map={
+      george:[['Living — View 01','550_George_St_View01_Living_R3.jpg','R3','4.2 MB',A],['Kitchen — View 02','550_George_St_View02_Kitchen_R2.jpg','R2','3.8 MB',B],['Master Bed — View 03','550_George_St_View03_Master_R2.jpg','R2','3.6 MB',A],['Facade — View 04','550_George_St_View04_Facade_R1.jpg','R1','5.1 MB',B]],
+      wharf:[['Lobby — View 01','Barangaroo_Wharf_View01_Lobby_R2.jpg','R2','4.0 MB',B],['Aerial — View 02','Barangaroo_Wharf_View02_Aerial_R1.jpg','R1','6.2 MB',A]],
+      park:[['Pool — View 01','Parkline_View01_Pool_R4.jpg','R4','4.4 MB',A],['Lounge — View 02','Parkline_View02_Lounge_R2.jpg','R2','3.9 MB',B]],
+      quay:[['Atrium — View 01','Quay_Quarter_View01_Atrium_R1.jpg','R1','4.7 MB',B]],
+    };
+    return (map[id]||[]).map((a,i)=>({ id:id+'-'+i, label:a[0], file:a[1], rev:a[2], size:a[3], render:a[4] }));
+  }
+  openDownload(p){ const assets=this.projectAssets(p.id); const m={}; assets.forEach(a=>m[a.id]=true); this.setState({dlProjectId:p.id, dlChecked:m}); }
+  dlVals(){
+    const st=this.state; const id=st.dlProjectId;
+    if(!id) return { dlOpen:false };
+    const projNames={george:'550 George Street', wharf:'Barangaroo Wharf', park:'The Parkline Residences', quay:'Quay Quarter Lofts'};
+    const assets=this.projectAssets(id);
+    const isChecked=(aid)=> st.dlChecked[aid]!==false;
+    const selected=assets.filter(a=>isChecked(a.id));
+    const totalMB=selected.reduce((t,a)=>t+parseFloat(a.size),0);
+    const countSel=()=>this.projectAssets(id).filter(a=>this.state.dlChecked[a.id]!==false).length;
+    return {
+      dlOpen:true, dlProjectName: projNames[id]||'', dlTotalCount: assets.length,
+      dlSelectedCount: selected.length, dlSelectedSize: totalMB.toFixed(1)+' MB',
+      dlAssets: assets.map(a=>{ const ck=isChecked(a.id); return { ...a, checked:ck,
+        onToggle:()=>this.setState(s=>({dlChecked:{...s.dlChecked,[a.id]: !(s.dlChecked[a.id]!==false)}})),
+        rowStyle:{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'10px', cursor:'pointer', background: ck?'#1b1b1f':'transparent', border:'1px solid '+(ck?'#2e2e34':'transparent') },
+        boxStyle:{ width:'22px', height:'22px', borderRadius:'6px', border:'2px solid '+(ck?'#e2241c':'#3a3a41'), background:ck?'#e2241c':'transparent', color:'#fff', fontSize:'13px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', flex:'none' } }; }),
+      dlSelectAll: ()=>{ const m={}; assets.forEach(a=>m[a.id]=true); this.setState({dlChecked:m}); },
+      dlSelectNone: ()=>{ const m={}; assets.forEach(a=>m[a.id]=false); this.setState({dlChecked:m}); },
+      closeDownload: ()=>this.setState({dlProjectId:null}),
+      dlIndividual: ()=>{ const n=countSel(); if(!n){ this._toast('Select at least one CGI to download.'); return; } this.setState({dlProjectId:null}); this._toast('Downloading '+n+' current CGI'+(n===1?'':'s')+' individually as optimised PDFs.'); },
+      dlZip: ()=>{ const n=countSel(); if(!n){ this._toast('Select at least one CGI to download.'); return; } this.setState({dlProjectId:null}); this._toast('Preparing ZIP — '+n+' current CGI'+(n===1?'':'s')+' bundled into one download.'); },
+    };
+  }
+
+  projectData(){
+    const st=this.state;
+    const mk=(initials,color)=>({initials,color});
+    const list=[
+      { id:'george', name:'550 George Street', code:'GEO-550', meta:'Sydney CBD · 42-level residential tower', needsReview:true, reviewCount:3, updated:'12 min ago', swatch:'#cdbfae', render:this.renderA(), teamLabel:'Harlow Architects · 6 reviewers',
+        team:[mk('DC','#e2241c'),mk('SW','#c026d3'),mk('ML','#33a96e')],
+        thumbs:[{rev:'R3 · Living', swatch:'#cdbfae', render:this.renderA(), border:'#c9a35b'},{rev:'R2 · Kitchen', swatch:'#b8a591', render:this.renderB(), border:'#c9a35b'},{rev:'R1 · Facade', swatch:'#9c8a76', render:this.renderA(), border:'#c9a35b'}] },
+      { id:'wharf', name:'Barangaroo Wharf', code:'BAR-12', meta:'Sydney · Mixed-use waterfront precinct', needsReview:true, reviewCount:2, updated:'1 hr ago', swatch:'#b6c2cf', render:this.renderB(), teamLabel:'Harlow Architects · 4 reviewers',
+        team:[mk('DC','#e2241c'),mk('EP','#c9a35b')],
+        thumbs:[{rev:'R2 · Lobby', swatch:'#b6c2cf', render:this.renderB(), border:'#c9a35b'},{rev:'R1 · Aerial', swatch:'#9fb0bf', render:this.renderA(), border:'#c9a35b'}] },
+      { id:'park', name:'The Parkline Residences', code:'PRK-08', meta:'Melbourne · 8-level boutique apartments', needsReview:false, reviewCount:0, updated:'Yesterday', swatch:'#c8c0b2', render:this.renderA(), teamLabel:'Harlow Architects · 5 reviewers',
+        team:[mk('DC','#e2241c'),mk('SW','#c026d3'),mk('ML','#33a96e')],
+        thumbs:[{rev:'R4 · Pool', swatch:'#c8c0b2', render:this.renderA(), border:'#26262b'}] },
+      { id:'quay', name:'Quay Quarter Lofts', code:'QQL-03', meta:'Sydney · Heritage adaptive reuse', needsReview:false, reviewCount:0, updated:'3 days ago', swatch:'#cabfb0', render:this.renderB(), teamLabel:'Harlow Architects · 3 reviewers',
+        team:[mk('DC','#e2241c'),mk('EP','#c9a35b')],
+        thumbs:[{rev:'R1 · Atrium', swatch:'#cabfb0', render:this.renderB(), border:'#26262b'}] },
+    ];
+    return list.map(p=>({
+      ...p,
+      hovered: st.hoverProject===p.id, notHovered: st.hoverProject!==p.id,
+      cardStyle:{ background:'#161619', border:'1px solid '+(st.hoverProject===p.id?'#3a2420':'#26262b'), borderRadius:'16px', overflow:'hidden', cursor:'pointer', boxShadow: st.hoverProject===p.id?'0 12px 30px rgba(20,30,50,0.12)':'0 1px 3px rgba(0,0,0,0.04)', transition:'box-shadow .2s, border-color .2s' },
+      onOpen: ()=>this.go('reviewer'), onHover: ()=>this.setState({hoverProject:p.id}),
+      onDownload: (e)=>{ e.stopPropagation(); this.openDownload(p); },
+      thumbs: p.thumbs.map(t=>({...t, onOpen:(e)=>{ e.stopPropagation(); this.go('reviewer'); }})),
+    }));
+  }
+}
+</script>
+</body>
+</html>
