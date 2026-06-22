@@ -10,7 +10,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 export const SUPABASE_URL = "https://khttsxgfwuxvzyzdtrno.supabase.co";
 export const SUPABASE_ANON_KEY = "sb_publishable_zTQSiruLouWFVufxw0n05w_e3KyBHtp";
 export const WORKER_URL = "https://censio-api.schan-b9e.workers.dev";
-export const APP_URL = "https://ivolve-censio.pages.dev";
+export const APP_URL = "https://censio.ivolvestudios.com";
 
 export const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -197,6 +197,8 @@ export async function addComment(assetId, c) {
     asset_id: assetId, author_id: user.id, n: c.n,
     x: c.x, y: c.y, shape: c.shape || null, tag: c.tag,
     body: c.text, attachment_path: c.attachment || null,
+    author_name: c.authorName || null, author_role: c.authorRole || null,
+    author_company: c.authorCompany || null,
   }).select("*, profiles:author_id(full_name, role)").single();
 }
 export async function updateComment(id, patch) {
