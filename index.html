@@ -60,14 +60,14 @@
           <p style="font-size: 17px; color: #a6a6ac; margin: 0 0 32px; line-height: 1.5; font-weight: 500;">{{ loginSubtitle }}</p>
 
           <label style="display: block; font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #d2d2d7;">Email address</label>
-          <input type="email" ref="{{ emailRef }}" value="" placeholder="you@company.com" style="width: 100%; height: 54px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 0 16px; font-size: 17px; font-weight: 500; background: #1b1b1f; margin-bottom: 20px; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.12);" />
+          <input type="email" ref="{{ emailRef }}" autoComplete="username" placeholder="you@company.com" style="width: 100%; height: 54px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 0 16px; font-size: 17px; font-weight: 500; background: #1b1b1f; margin-bottom: 20px; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.12);" />
 
           <label style="display: block; font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #d2d2d7;">{{ passwordLabel }}</label>
-          <input type="password" ref="{{ pwRef }}" value="" placeholder="Your password" style="width: 100%; height: 54px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 0 16px; font-size: 17px; font-weight: 500; background: #1b1b1f; margin-bottom: 14px; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.12);" />
+          <input type="password" ref="{{ pwRef }}" autoComplete="current-password" placeholder="Your password" style="width: 100%; height: 54px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 0 16px; font-size: 17px; font-weight: 500; background: #1b1b1f; margin-bottom: 14px; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.12);" />
 
           <sc-if value="{{ isFirstTime }}" hint-placeholder-val="{{ false }}">
             <label style="display: block; font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #d2d2d7;">Confirm password</label>
-            <input type="password" value="••••••••••" style="width: 100%; height: 54px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 0 16px; font-size: 17px; font-weight: 500; background: #1b1b1f; margin-bottom: 14px; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.12);" />
+            <input type="password" ref="{{ pwConfirmRef }}" autoComplete="new-password" placeholder="Re-enter your new password" style="width: 100%; height: 54px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 0 16px; font-size: 17px; font-weight: 500; background: #1b1b1f; margin-bottom: 14px; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.12);" />
           </sc-if>
 
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px;">
@@ -1141,6 +1141,8 @@ class Component extends DCLogic {
         if(!email || !pw){ this._toast('Enter your email and password.'); return; }
         if(!window.Censio){ this._toast('Still connecting to the server — try again in a moment.'); return; }
         if(st.firstTime){
+          const confirm = this._loginPwConfirm ? this._loginPwConfirm.value : '';
+          if(confirm && pw!==confirm){ this._toast('The two passwords don\u2019t match.'); return; }
           const { error } = await window.Censio.setFirstPassword(pw);
           if(error){ this._toast('Could not set password: '+error.message); return; }
           this._toast('Password set ✓'); const p1 = await window.Censio.currentProfile(); this.applyProfile(p1); return;
@@ -1153,6 +1155,7 @@ class Component extends DCLogic {
       },
       emailRef: (el)=>{ this._loginEmail = el; },
       pwRef: (el)=>{ this._loginPw = el; },
+      pwConfirmRef: (el)=>{ this._loginPwConfirm = el; },
       enterAsTeam: ()=>this.go('teamlogin'),
       backToConsultant: ()=>this.go('login'),
       enterAsMember: ()=>{ this.setState({isTeam:true, teamRole:'member'}); this.go('upload'); },
