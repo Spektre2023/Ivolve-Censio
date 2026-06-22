@@ -115,6 +115,25 @@ export async function currentAssets(projectId) {
     .order("view_no");
   return data || [];
 }
+export async function lockAngle(assetId, locked) {
+  return db.from("assets").update({ angle_locked: !!locked }).eq("id", assetId);
+}
+export async function castVote(assetId) {
+  const { data: { user } } = await db.auth.getUser();
+  return db.from("angle_votes").upsert({ asset_id: assetId, voter_id: user.id });
+}
+export async function clearVote(assetId) {
+  const { data: { user } } = await db.auth.getUser();
+  return db.from("angle_votes").delete().eq("asset_id", assetId).eq("voter_id", user.id);
+}
+export async function voteData(assetIds) {
+  if (!assetIds || !assetIds.length) return { counts: {}, mine: [] };
+  const { data: { user } } = await db.auth.getUser();
+  const { data } = await db.from("angle_votes").select("asset_id, voter_id").in("asset_id", assetIds);
+  const counts = {}; const mine = [];
+  (data || []).forEach((r) => { counts[r.asset_id] = (counts[r.asset_id] || 0) + 1; if (r.voter_id === (user && user.id)) mine.push(r.asset_id); });
+  return { counts, mine };
+}
 export async function assetById(assetId) {
   const { data } = await db.from("assets").select("*").eq("id", assetId).single();
   return data;
@@ -140,6 +159,7 @@ export async function uploadAsset(projectId, file, meta) {
     revision: meta.revision, view_no: meta.view, type: meta.type, media: meta.media || "image",
     requested_roles: meta.roles, artist_notes: meta.notes,
     supersedes_id: meta.supersedesId || null,
+    stage: meta.stage || "cgi", slot: meta.slot || null, option_label: meta.optionLabel || null,
   }).select().single();
   // Fire-and-forget: web-optimise + build the review PDF (Edge Function).
   // The image is usable immediately; storage_path swaps to the optimised file when done.
@@ -154,9 +174,21 @@ export async function optimizeAsset(assetId) {
 
 // ---------- COMMENTS / MARKUPS ----------
 export async function getComments(assetId) {
-  const { data } = await db.from("comments")
+  // Resilient read: never let one optional embed wipe the whole result.
+  // Comments are ALWAYS returned even if a linked profile/veto embed fails.
+  let { data, error } = await db.from("comments")
     .select("*, profiles:author_id(full_name, role), vetoer:vetoed_by(full_name)")
     .eq("asset_id", assetId).order("n");
+  if (error) {
+    const r = await db.from("comments")
+      .select("*, profiles:author_id(full_name, role)")
+      .eq("asset_id", assetId).order("n");
+    data = r.data; error = r.error;
+  }
+  if (error) {
+    const r = await db.from("comments").select("*").eq("asset_id", assetId).order("n");
+    data = r.data;
+  }
   return data || [];
 }
 export async function addComment(assetId, c) {
