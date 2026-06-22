@@ -437,8 +437,18 @@
             <!-- comment lists -->
             <sc-if value="{{ showCommentList }}" hint-placeholder-val="{{ true }}">
               <div style="padding: 14px 16px;">
-                <sc-for list="{{ listPins }}" as="c" hint-placeholder-count="3">
-                  <div onClick="{{ c.onSelect }}" style="{{ c.cardStyle }}">
+                <sc-for list="{{ commentGroups }}" as="g" hint-placeholder-count="2">
+                  <div onClick="{{ g.onToggle }}" style="{{ g.headerStyle }}">
+                    <span style="{{ g.chevronStyle }}">▸</span>
+                    <div style="min-width: 0;">
+                      <div style="font-size: 15px; font-weight: 800; color: #f4f4f2;">{{ g.label }}</div>
+                      <div style="font-size: 12px; color: #7a7a82; font-weight: 600;">{{ g.role }}</div>
+                    </div>
+                    <span style="{{ g.countStyle }}">{{ g.count }}</span>
+                  </div>
+                  <sc-if value="{{ g.open }}" hint-placeholder-val="{{ false }}">
+                    <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="2">
+                      <div onClick="{{ c.onSelect }}" style="{{ c.cardStyle }}">
                     <div style="display: flex; align-items: flex-start; gap: 11px;">
                       <div style="{{ c.numStyle }}">{{ c.n }}</div>
                       <div style="flex: 1; min-width: 0;">
@@ -469,7 +479,9 @@
                         </div>
                       </div>
                     </div>
-                  </div>
+                      </div>
+                    </sc-for>
+                  </sc-if>
                 </sc-for>
 
                 <sc-if value="{{ isMineTab }}" hint-placeholder-val="{{ true }}">
@@ -1064,6 +1076,7 @@ class Component extends DCLogic {
     upWhitecard: false,
     rvVotes: {},
     rvMyVotes: [],
+    cmtGroupsOpen: {},
     dbPeople: null,          // admin: profiles[]
     dbProjectId: null,       // project context for reviewer/download
     joinedIds: [],           // team: project ids I've joined
@@ -1266,6 +1279,7 @@ class Component extends DCLogic {
         tag: c.tag||'Other', x:Number(c.x), y:Number(c.y), shape:c.shape||null,
         attachment: c.attachment_path||null, text:c.body, resolved:!!c.resolved,
         vetoed: !!c.vetoed, vetoedBy: (c.vetoer&&c.vetoer.full_name)||'',
+        company: c.author_company||'',
       }));
       const maxN = pins.reduce((m,p)=>Math.max(m, p.n||0), 0);
       this.setState({ rvComments: pins, nextN: maxN+1 });
@@ -1452,6 +1466,21 @@ class Component extends DCLogic {
         onSelect: ()=>{}, onToggleVis: (e)=>{ e.stopPropagation(); this.setState(s=>({hidden:{...s.hidden,[p.id]: !s.hidden[p.id]}})); }
       };
     });
+
+    // group comments by person (with their company) — collapsed by default, count on the header
+    const _gmap={};
+    listPins.forEach(p=>{ const key=p.author||'Reviewer'; (_gmap[key]=_gmap[key]||[]).push(p); });
+    const commentGroups=Object.keys(_gmap).sort((a,b)=> a==='You'?-1 : b==='You'?1 : a.localeCompare(b)).map(key=>{
+      const items=_gmap[key]; const first=items[0]||{}; const open=!!st.cmtGroupsOpen[key];
+      const company=first.company||''; const label=key+(company?(' · '+company):'');
+      return { key, label, role:first.role||'', count:items.length, open, items,
+        headerStyle:{ display:'flex', alignItems:'center', gap:'11px', padding:'12px 14px', borderRadius:'12px', background: open?'#1b1b1f':'#17171b', border:'1px solid '+(open?'#3a2420':'#26262b'), cursor:'pointer', marginBottom:'8px' },
+        chevronStyle:{ display:'inline-block', width:'14px', color:'#7a7a82', fontSize:'14px', transition:'transform .15s ease', transform: open?'rotate(90deg)':'none', flex:'none' },
+        countStyle:{ marginLeft:'auto', fontSize:'13px', fontWeight:800, color:'#c9a35b', background:'#2a2417', padding:'3px 11px', borderRadius:'100px', flex:'none' },
+        onToggle:()=>this.setState(s=>({ cmtGroupsOpen:{ ...s.cmtGroupsOpen, [key]: !s.cmtGroupsOpen[key] } })),
+      };
+    });
+    this._commentGroups = commentGroups;
 
     // ---- swipe geometry ----
     const sw = st.swipe;
@@ -1654,7 +1683,7 @@ class Component extends DCLogic {
       showCommentList: st.tab!=='ai',
       tabCommentsStyle: this.tabStyle(st.tab==='comments'), tabAiStyle: this.tabStyle(st.tab==='ai'),
       myCount: allPins.length, everyoneCount: allPins.length, hasConflict: aiV.hasConflict,
-      listPins,
+      listPins, commentGroups: this._commentGroups,
 
       // ai
       ...aiV,
@@ -1753,10 +1782,10 @@ class Component extends DCLogic {
       const asset=this.state.rvAsset; if(!asset){ this._toast('No asset loaded.'); return; }
       const prof=this.state.profile;
       this.setState({busy:true});
-      window.Censio.addComment(asset.id, { n:c.n, x:c.x, y:c.y, shape:c.shape||null, tag:c.tag, text:txt, attachment:c.attachment||null, authorName: prof.full_name||prof.email||'Reviewer', authorRole: prof.role||(prof.is_team?'Ivolve Team':'') })
+      window.Censio.addComment(asset.id, { n:c.n, x:c.x, y:c.y, shape:c.shape||null, tag:c.tag, text:txt, attachment:c.attachment||null, authorName: prof.full_name||prof.email||'Reviewer', authorRole: prof.role||(prof.is_team?'Ivolve Team':''), authorCompany: (prof.companies&&prof.companies.name)||'' })
         .then(({data,error})=>{
           if(error||!data){ this._toast('Could not save note: '+(error?error.message:'unknown error')); this.setState({busy:false}); return; }
-          const np={ id:data.id, n:data.n, mine:true, author:'You', role:prof.role||'', roleColor:this.roleColor(prof.role||''), tag:data.tag, x:Number(data.x), y:Number(data.y), shape:data.shape||null, attachment:data.attachment_path||null, text:data.body };
+          const np={ id:data.id, n:data.n, mine:true, author:'You', role:prof.role||'', roleColor:this.roleColor(prof.role||''), company:(prof.companies&&prof.companies.name)||'', tag:data.tag, x:Number(data.x), y:Number(data.y), shape:data.shape||null, attachment:data.attachment_path||null, text:data.body };
           this.setState(s=>({ rvComments:[...(s.rvComments||[]), np], nextN:s.nextN+1, composer:null, drawPoints:[], busy:false, rvAi:null }));
         }).catch(()=>{ this._toast('Save failed — check your connection.'); this.setState({busy:false}); });
       return;
