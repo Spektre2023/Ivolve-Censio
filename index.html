@@ -289,34 +289,32 @@
       <div style="height: 64px; flex: none; background: #1b1b1f; border-bottom: 1px solid #26262b; display: flex; align-items: center; padding: 0 20px; gap: 16px; z-index: 30;">
         <button onClick="{{ backToProjects }}" style="display: flex; align-items: center; gap: 8px; background: #f1f3f6; border: none; height: 42px; padding: 0 16px; border-radius: 10px; font-size: 15px; font-weight: 700; color: #d2d2d7; cursor: pointer;" style-hover="background: #e6e9ee;">← Projects</button>
         <div style="width: 1px; height: 28px; background: #26262b;"></div>
-        <div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <h2 style="font-size: 18px; font-weight: 800; margin: 0; letter-spacing: -0.01em;">{{ assetTitle }}</h2>
-            <span style="background: #e2241c; color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; padding: 3px 9px; border-radius: 6px;">{{ assetRev }}</span>
-            <span style="background: #2a2417; color: #c9a35b; font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 6px;">{{ assetType }}</span>
-          </div>
-          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7a7a82; margin-top: 3px;">{{ assetFilename }} · uploaded {{ assetUploaded }}</div>
+        <div style="position: relative;">
+          <button onClick="{{ toggleSwitcher }}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px; background: transparent; border: none; padding: 0; cursor: pointer; text-align: left;" style-hover="opacity: 0.85;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h2 style="font-size: 18px; font-weight: 800; margin: 0; letter-spacing: -0.01em;">{{ assetTitle }}</h2>
+              <span style="background: #e2241c; color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; padding: 3px 9px; border-radius: 6px;">{{ assetRev }}</span>
+              <span style="background: #2a2417; color: #c9a35b; font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 6px;">{{ assetType }}</span>
+              <sc-if value="{{ hasMultipleViews }}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #7a7a82; font-weight: 700;">▾ {{ viewCount }} views</span></sc-if>
+            </div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7a7a82;">{{ assetFilename }} · uploaded {{ assetUploaded }}</div>
+          </button>
+          <sc-if value="{{ switcherOpen }}" hint-placeholder-val="{{ false }}">
+            <div data-scroll style="position: absolute; top: 54px; left: 0; z-index: 40; width: 308px; background: #1b1b1f; border: 1px solid #2e2e34; border-radius: 12px; box-shadow: 0 18px 50px rgba(0,0,0,0.55); padding: 8px; max-height: 400px; overflow-y: auto;">
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: #6e6e75; font-weight: 600; padding: 6px 10px 8px;">VIEWS IN THIS PROJECT</div>
+              <sc-for list="{{ rvViews }}" as="v" hint-placeholder-count="2">
+                <button onClick="{{ v.onPick }}" style="{{ v.style }}">
+                  <div style="width: 46px; height: 34px; border-radius: 6px; background: {{ v.render }}; flex: none;"></div>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 14px; font-weight: 800; color: #f4f4f2;">{{ v.label }}</div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #7a7a82;">{{ v.rev }}</div>
+                  </div>
+                  <sc-if value="{{ v.active }}" hint-placeholder-val="{{ false }}"><span style="color: #e2241c; font-weight: 800; font-size: 16px;">●</span></sc-if>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
         </div>
-        <sc-if value="{{ hasMultipleViews }}" hint-placeholder-val="{{ false }}">
-          <div style="position: relative;">
-            <button onClick="{{ toggleSwitcher }}" style="display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 14px; border-radius: 10px; border: 1.5px solid #2e2e34; background: #17171b; font-size: 14px; font-weight: 700; color: #d2d2d7; cursor: pointer;" style-hover="border-color: #e2241c;">⊞ Views · {{ viewCount }} ▾</button>
-            <sc-if value="{{ switcherOpen }}" hint-placeholder-val="{{ false }}">
-              <div data-scroll style="position: absolute; top: 50px; left: 0; z-index: 40; width: 308px; background: #1b1b1f; border: 1px solid #2e2e34; border-radius: 12px; box-shadow: 0 18px 50px rgba(0,0,0,0.55); padding: 8px; max-height: 400px; overflow-y: auto;">
-                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: #6e6e75; font-weight: 600; padding: 6px 10px 8px;">VIEWS IN THIS PROJECT</div>
-                <sc-for list="{{ rvViews }}" as="v" hint-placeholder-count="2">
-                  <button onClick="{{ v.onPick }}" style="{{ v.style }}">
-                    <div style="width: 46px; height: 34px; border-radius: 6px; background: {{ v.render }}; flex: none;"></div>
-                    <div style="flex: 1; min-width: 0;">
-                      <div style="font-size: 14px; font-weight: 800; color: #f4f4f2;">{{ v.label }}</div>
-                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #7a7a82;">{{ v.rev }}</div>
-                    </div>
-                    <sc-if value="{{ v.active }}" hint-placeholder-val="{{ false }}"><span style="color: #e2241c; font-weight: 800; font-size: 16px;">●</span></sc-if>
-                  </button>
-                </sc-for>
-              </div>
-            </sc-if>
-          </div>
-        </sc-if>
         <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
           <button onClick="{{ toggleSwipe }}" style="{{ swipeBtnStyle }}">{{ icCompare }} Compare to {{ prevRev }}</button>
           <div style="position: relative;">
@@ -431,8 +429,7 @@
         <!-- RIGHT: comments + AI -->
         <div style="width: 380px; flex: none; background: #1b1b1f; border-left: 1px solid #26262b; display: flex; flex-direction: column; min-height: 0;">
           <div style="display: flex; padding: 6px 8px; gap: 4px; border-bottom: 1px solid #26262b; flex: none;">
-            <button onClick="{{ setTabMine }}" style="{{ tabMineStyle }}">My notes <span style="opacity: 0.7;">{{ myCount }}</span></button>
-            <button onClick="{{ setTabEveryone }}" style="{{ tabEveryoneStyle }}">Everyone <span style="opacity: 0.7;">{{ everyoneCount }}</span></button>
+            <button onClick="{{ setTabComments }}" style="{{ tabCommentsStyle }}">Markups/Comments <span style="opacity: 0.7;">{{ everyoneCount }}</span></button>
             <button onClick="{{ setTabAi }}" style="{{ tabAiStyle }}">{{ icSparkle }} AI <sc-if value="{{ hasConflict }}" hint-placeholder-val="{{ true }}"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #dc2626; margin-left: 2px;"></span></sc-if></button>
           </div>
 
@@ -1016,7 +1013,7 @@ class Component extends DCLogic {
     // reviewer
     tool: 'pin',
     zoom: 1,
-    tab: 'mine',
+    tab: 'comments',
     swipe: false,
     swipePos: 56,
     showComments: true,
@@ -1239,7 +1236,7 @@ class Component extends DCLogic {
     this.setState({ dbProjectId: projectId });
     this.go('reviewer');
     if(!this.isReal()) return;
-    this.setState({ rvLoading:true, rvComments:null, rvAi:null, approved:false, tab: this.state.isTeam ? 'everyone' : 'mine', composer:null });
+    this.setState({ rvLoading:true, rvComments:null, rvAi:null, approved:false, tab:'comments', composer:null });
     try {
       const assets = this.state.dbAssetsByProject[projectId] || await window.Censio.currentAssets(projectId);
       const asset = assetId ? (assets.find(a=>a.id===assetId)||assets[0]) : assets[0];
@@ -1427,11 +1424,11 @@ class Component extends DCLogic {
     const onTab = (t)=>()=>this.setState({tab:t, composer: t==='mine'?st.composer:null});
 
     // pins shown on image
-    const tabPins = st.tab==='mine' ? myPins : allPins;
+    const tabPins = allPins;
     const visiblePins = (st.showComments? tabPins : []).map((p,i)=>({
       ...p, markerStyle: markerStyle(p,i), title: (p.mine && !st.approved) ? 'Drag to move · click to select' : (p.author+': '+p.text),
       onPinDown: (p.mine && !st.approved) ? (e)=>this.startPinDrag(e,p) : null,
-      onClick: (e)=>{ e.stopPropagation(); if(this._suppress){ this._suppress=false; return; } this.setState({tab: p.mine?'mine':st.tab}); }
+      onClick: (e)=>{ e.stopPropagation(); if(this._suppress){ this._suppress=false; return; } this.setState({tab:'comments'}); }
     }));
 
     // right-panel list
@@ -1652,11 +1649,11 @@ class Component extends DCLogic {
       stageHint: st.composer ? 'Add your comment in the panel — a note can’t be saved without it' : (st.tool==='pin' ? 'Click to add a note · drag any of your pins to move them' : (st.tool==='sketch' ? 'Click and drag to draw a freehand shape around an area' : (st.swipe?'Drag the handle to compare R3 with R2':'Scroll to zoom · drag to pan · hold middle mouse to pan'))),
 
       // right tabs
-      setTabMine: onTab('mine'), setTabEveryone: onTab('everyone'), setTabAi: ()=>this.openAiTab(),
-      tab: st.tab, isMineTab: st.tab==='mine', isAiTab: st.tab==='ai',
+      setTabComments: ()=>this.setState({tab:'comments'}), setTabAi: ()=>this.openAiTab(),
+      tab: st.tab, isMineTab: st.tab==='comments', isAiTab: st.tab==='ai',
       showCommentList: st.tab!=='ai',
-      tabMineStyle: this.tabStyle(st.tab==='mine'), tabEveryoneStyle: this.tabStyle(st.tab==='everyone'), tabAiStyle: this.tabStyle(st.tab==='ai'),
-      myCount: myPins.length, everyoneCount: allPins.length, hasConflict: aiV.hasConflict,
+      tabCommentsStyle: this.tabStyle(st.tab==='comments'), tabAiStyle: this.tabStyle(st.tab==='ai'),
+      myCount: allPins.length, everyoneCount: allPins.length, hasConflict: aiV.hasConflict,
       listPins,
 
       // ai
@@ -1734,9 +1731,9 @@ class Component extends DCLogic {
   _swipeMove = (e)=>{ const el=this._stage; if(!el) return; const r=el.getBoundingClientRect(); const pos=((e.clientX-r.left)/r.width)*100; this.setState({ swipePos: Math.max(0, Math.min(100, pos)) }); };
   _swipeUp = ()=>{ window.removeEventListener('mousemove', this._swipeMove); window.removeEventListener('mouseup', this._swipeUp); this._suppress=true; };
 
-  openComposer(partial){ this.setState(s=>({ tab:'mine', composer:{ n:s.nextN, tag:'Material', attachment:null, ...partial } })); setTimeout(()=>{ if(this._composer) this._composer.focus(); },60); }
+  openComposer(partial){ this.setState(s=>({ tab:'comments', composer:{ n:s.nextN, tag:'Material', attachment:null, ...partial } })); setTimeout(()=>{ if(this._composer) this._composer.focus(); },60); }
   editComment(p){
-    this.setState({ tab:'mine', composer:{ editId:p.id, n:p.n, x:p.x, y:p.y, tag:p.tag, shape:p.shape||null, attachment:p.attachment||null } });
+    this.setState({ tab:'comments', composer:{ editId:p.id, n:p.n, x:p.x, y:p.y, tag:p.tag, shape:p.shape||null, attachment:p.attachment||null } });
     setTimeout(()=>{ if(this._composer){ this._composer.value=p.text; this._composer.focus(); } },60);
   }
   attachRef(){ this.setState(s=>({ composer:{ ...s.composer, attachment: s.composer.attachment? null : 'reference_tan-leather_FS-04.jpg' } })); }
