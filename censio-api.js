@@ -194,5 +194,21 @@ async function callWorker(path, opts = {}) {
 export const aiReview    = (assetId)        => callWorker("/api/ai/review", { method: "POST", body: JSON.stringify({ assetId }) });
 export const notify      = (payload)        => callWorker("/api/notify",   { method: "POST", body: JSON.stringify(payload) });
 export const downloadUrl = (assetId, mode)  => callWorker(`/api/download?assetId=${assetId}&mode=${mode || "original"}`);
-// Admin: create + invite a consultant (needs the service key → Worker only).
+// Admin: create + invite a consultant (legacy invite-email flow).
 export const inviteConsultant = (payload)   => callWorker("/api/admin/consultant", { method: "POST", body: JSON.stringify(payload) });
+
+// ---------- FRICTIONLESS ONBOARDING ----------
+// One default password everyone gets; the app forces a change on first sign-in.
+export const DEFAULT_PASSWORD = "Censio2026!";
+// Batch-create accounts directly (no invite email). users: [{full_name,email,role,company,is_team,password}]
+export const createUsers   = (users)   => callWorker("/api/admin/create-users", { method: "POST", body: JSON.stringify({ users }) });
+// Admin sets/overrides a user's password (and shows it in the panel).
+export const setUserPassword = (payload) => callWorker("/api/admin/set-password", { method: "POST", body: JSON.stringify(payload) });
+// The signed-in user changes their own password; we also store it readable for admin.
+export async function changeMyPassword(newPassword) {
+  const up = await db.auth.updateUser({ password: newPassword });
+  if (up.error) return up;
+  const { data: { user } } = await db.auth.getUser();
+  if (user) await db.from("profiles").update({ visible_password: newPassword, must_change_password: false }).eq("id", user.id);
+  return { data: up.data, error: null };
+}
