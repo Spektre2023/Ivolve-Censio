@@ -79,9 +79,14 @@
 
           <button onClick="{{ toggleFirstTime }}" style="width: 100%; height: 50px; background: transparent; color: #a6a6ac; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px;">{{ firstTimeToggleLabel }}</button>
 
-          <div style="margin-top: 28px; padding-top: 24px; border-top: 1px solid #26262b; display: flex; gap: 10px;">
-            <button onClick="{{ enterAsTeam }}" style="flex: 1; height: 48px; background: #1b1b1f; color: #d2d2d7; border: 1.5px solid #2e2e34; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;" style-hover="border-color: #e2241c; color: #e2241c;">Ivolve Team Access</button>
-          </div>
+          <sc-if value="{{ showTeamAccess }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top: 28px; padding-top: 24px; border-top: 1px solid #26262b; display: flex; gap: 10px;">
+              <button onClick="{{ enterAsTeam }}" style="flex: 1; height: 48px; background: #1b1b1f; color: #d2d2d7; border: 1.5px solid #2e2e34; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;" style-hover="border-color: #e2241c; color: #e2241c;">Ivolve Team Access (demo)</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ showTeamHint }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top: 28px; padding-top: 22px; border-top: 1px solid #26262b; font-size: 14px; color: #7a7a82; font-weight: 600; line-height: 1.5; text-align: center;">Ivolve team &amp; administrators — sign in with your team email above.</div>
+          </sc-if>
         </div>
       </div>
     </div>
@@ -452,36 +457,44 @@
                 <div style="background: linear-gradient(135deg, #17171c, #1b1620); border: 1px solid #2a2a32; border-radius: 14px; padding: 16px; margin-bottom: 16px;">
                   <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 6px;">
                     <span style="font-size: 17px;">✦</span>
-                    <span style="font-size: 15px; font-weight: 800;">Claude reviewed all 7 comments</span>
+                    <span style="font-size: 15px; font-weight: 800;">{{ aiHeadline }}</span>
                   </div>
-                  <p style="font-size: 14px; line-height: 1.5; color: #b4b4ba; margin: 0; font-weight: 500;">Cross-checked for contradictions, clarity and grouped by type. Found <strong style="color: #dc2626;">1 conflict</strong> and <strong style="color: #c9a35b;">1 unclear note</strong>.</p>
+                  <p style="font-size: 14px; line-height: 1.5; color: #b4b4ba; margin: 0; font-weight: 500;">{{ aiSubline }}</p>
                 </div>
 
-                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #7a7a82; font-weight: 600; margin-bottom: 10px;">⚠ CONFLICTS</div>
-                <div style="border: 1.5px solid #5a2420; background: #1d1414; border-radius: 14px; padding: 16px; margin-bottom: 18px;">
-                  <div style="font-size: 15px; font-weight: 800; color: #ef6b62; margin-bottom: 12px;">Kitchen island position — direct contradiction</div>
-                  <div style="border-left: 3px solid #e2241c; padding: 2px 0 2px 12px; margin-bottom: 10px;">
-                    <div style="font-size: 13px; font-weight: 800; color: #e2241c;">You · Architect · Note 3</div>
-                    <div style="font-size: 14px; color: #d2d2d7; font-weight: 500; line-height: 1.45;">Move the island 300mm toward the window.</div>
-                  </div>
-                  <div style="border-left: 3px solid #c026d3; padding: 2px 0 2px 12px; margin-bottom: 14px;">
-                    <div style="font-size: 13px; font-weight: 800; color: #c026d3;">Sarah Whitfield · Interior Designer</div>
-                    <div style="font-size: 14px; color: #d2d2d7; font-weight: 500; line-height: 1.45;">Keep the island; extend the bench 300mm away from the window.</div>
-                  </div>
-                  <button onClick="{{ notifyConflict }}" style="width: 100%; height: 46px; background: #e2241c; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;" style-hover="background: #d2d2d7;">✉ Notify both consultants to resolve</button>
-                </div>
+                <sc-if value="{{ aiHasConflicts }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #7a7a82; font-weight: 600; margin-bottom: 10px;">⚠ CONFLICTS</div>
+                  <sc-for list="{{ aiConflicts }}" as="cf" hint-placeholder-count="1">
+                    <div style="border: 1.5px solid #5a2420; background: #1d1414; border-radius: 14px; padding: 16px; margin-bottom: 18px;">
+                      <div style="font-size: 15px; font-weight: 800; color: #ef6b62; margin-bottom: 12px;">{{ cf.summary }}</div>
+                      <div style="border-left: 3px solid {{ cf.aColor }}; padding: 2px 0 2px 12px; margin-bottom: 10px;">
+                        <div style="font-size: 13px; font-weight: 800; color: {{ cf.aColor }};">{{ cf.aWho }}</div>
+                        <div style="font-size: 14px; color: #d2d2d7; font-weight: 500; line-height: 1.45;">{{ cf.aText }}</div>
+                      </div>
+                      <div style="border-left: 3px solid {{ cf.bColor }}; padding: 2px 0 2px 12px; margin-bottom: 14px;">
+                        <div style="font-size: 13px; font-weight: 800; color: {{ cf.bColor }};">{{ cf.bWho }}</div>
+                        <div style="font-size: 14px; color: #d2d2d7; font-weight: 500; line-height: 1.45;">{{ cf.bText }}</div>
+                      </div>
+                      <button onClick="{{ cf.onNotify }}" style="width: 100%; height: 46px; background: #e2241c; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;" style-hover="background: #be1a14;">✉ Notify both consultants to resolve</button>
+                    </div>
+                  </sc-for>
+                </sc-if>
 
-                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #7a7a82; font-weight: 600; margin-bottom: 10px;">◇ NEEDS CLARITY</div>
-                <div style="border: 1.5px solid #574a26; background: #1d1a12; border-radius: 14px; padding: 16px; margin-bottom: 18px;">
-                  <div style="font-size: 14px; font-weight: 800; color: #f4f4f2; margin-bottom: 4px;">Marcus Lee · Landscape Designer</div>
-                  <p style="font-size: 14px; color: #d2d2d7; font-weight: 500; margin: 0 0 8px; line-height: 1.45;">“Make the courtyard planting pop more.”</p>
-                  <p style="font-size: 14px; color: #c9a35b; font-weight: 600; margin: 0; line-height: 1.45;">Too vague to action — which plants, what colour, how dense? Ask Marcus for specifics.</p>
-                </div>
+                <sc-if value="{{ aiHasUnclear }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #7a7a82; font-weight: 600; margin-bottom: 10px;">◇ NEEDS CLARITY</div>
+                  <sc-for list="{{ aiUnclear }}" as="uc" hint-placeholder-count="1">
+                    <div style="border: 1.5px solid #574a26; background: #1d1a12; border-radius: 14px; padding: 16px; margin-bottom: 18px;">
+                      <div style="font-size: 14px; font-weight: 800; color: #f4f4f2; margin-bottom: 4px;">{{ uc.who }}</div>
+                      <p style="font-size: 14px; color: #d2d2d7; font-weight: 500; margin: 0 0 8px; line-height: 1.45;">“{{ uc.quote }}”</p>
+                      <p style="font-size: 14px; color: #c9a35b; font-weight: 600; margin: 0; line-height: 1.45;">{{ uc.why }}</p>
+                    </div>
+                  </sc-for>
+                </sc-if>
 
                 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #7a7a82; font-weight: 600; margin-bottom: 10px;">≡ ACTION SUMMARY FOR IVOLVE</div>
                 <div style="border: 1px solid #26262b; border-radius: 14px; padding: 16px;">
                   <sc-for list="{{ aiSummary }}" as="s" hint-placeholder-count="3">
-                    <div style="display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid #f1f3f6;">
+                    <div style="display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid #26262b;">
                       <span style="{{ s.tagStyle }}">{{ s.tag }}</span>
                       <span style="font-size: 14px; color: #d2d2d7; font-weight: 500; line-height: 1.45; flex: 1;">{{ s.text }}</span>
                     </div>
@@ -562,6 +575,7 @@
 
             <!-- LEFT: drop / preview -->
             <div>
+              <input type="file" ref="{{ upFileRef }}" onChange="{{ onUpFile }}" accept="image/*,video/*" style="display: none;" />
               <sc-if value="{{ upUploaded }}" hint-placeholder-val="{{ false }}">
                 <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 18px; overflow: hidden;">
                   <div style="height: 360px; position: relative; background: {{ upRender }};">
@@ -631,7 +645,7 @@
 
               <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 18px; padding: 20px 22px;">
                 <div style="font-size: 16px; font-weight: 800; margin-bottom: 12px;">Note for the reviewing team</div>
-                <textarea placeholder="e.g. This update does not yet include view photography — awaiting final photos." style="width: 100%; min-height: 92px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 13px 15px; font-size: 15px; font-weight: 500; resize: vertical; line-height: 1.5; background: #131316; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.1);"></textarea>
+                <textarea ref="{{ upNotesRef }}" placeholder="e.g. This update does not yet include view photography — awaiting final photos." style="width: 100%; min-height: 92px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 13px 15px; font-size: 15px; font-weight: 500; resize: vertical; line-height: 1.5; background: #131316; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.1);"></textarea>
               </div>
 
               <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 18px; padding: 20px 22px;">
@@ -803,6 +817,22 @@ class Component extends DCLogic {
     uploadPickerOpen: false,
     uploadSearch: '',
     joined: { george:true, parkline:true },
+    // ---- live backend state (populated when signed in) ----
+    connected: false,        // censio-api.js loaded
+    profile: null,           // logged-in profile row
+    dbProjects: null,        // [{...project, assets:[{count}]}]
+    dbAssetsByProject: {},    // projectId -> current assets[]
+    dbImg: {},               // assetId -> signed image url
+    rvAsset: null,           // reviewer: current asset row
+    rvAssets: [],            // reviewer: all current assets in project
+    rvPrev: null,            // reviewer: superseded/previous asset
+    rvComments: null,        // reviewer: comments[] for current asset
+    rvAi: null,              // reviewer: AI review result
+    rvLoading: false,
+    dbPeople: null,          // admin: profiles[]
+    dbProjectId: null,       // project context for reviewer/download
+    joinedIds: [],           // team: project ids I've joined
+    busy: false,
   };
 
   componentDidMount() {
@@ -816,22 +846,120 @@ class Component extends DCLogic {
       { id:'e4', n:7, mine:false, author:'Sarah Whitfield', role:'Interior Designer', roleColor:'#c026d3', tag:'Material', x:74, y:70, text:'Sofa fabric is perfect. No changes needed here.' },
     ];
     this.setState({ pins: seed });
-    try { const s = localStorage.getItem('iv_screen'); if (s) this.setState({ screen: s }); } catch(e){}
+    if(window.Censio){ this.setState({ connected:true }); }
+    else { window.addEventListener('censio-ready', ()=>this.setState({ connected:true }), { once:true }); }
     this.checkSession();
   }
 
+  // true once we have a real signed-in profile from Supabase
+  isReal(){ return !!(window.Censio && this.state.profile); }
+
   checkSession(){
-    if(window.Censio){ window.Censio.currentProfile().then(p=>{ if(p) this.applyProfile(p); }); }
+    if(window.Censio){ window.Censio.currentProfile().then(p=>{ if(p) this.applyProfile(p); }).catch(()=>{}); }
     else { window.addEventListener('censio-ready', ()=>this.checkSession(), { once:true }); }
   }
   applyProfile(profile){
     if(!profile){ this.setState({isTeam:false}); this.go('projects'); return; }
     const isTeam = !!profile.is_team, isAdmin = !!profile.is_admin;
-    this.setState({ isTeam, teamRole: isAdmin?'admin':'member', profile });
+    this.setState({ connected:true, isTeam, teamRole: isAdmin?'admin':'member', profile });
     this.go(isTeam ? (isAdmin ? 'admin' : 'upload') : 'projects');
   }
 
-  go(screen){ this.setState({ screen }); try { localStorage.setItem('iv_screen', screen); } catch(e){} }
+  go(screen){ this.setState({ screen }); try { localStorage.setItem('iv_screen', screen); } catch(e){} this.loadFor(screen); }
+
+  // ---- per-screen data loaders (no-ops in offline preview) ----
+  loadFor(screen){
+    if(!this.isReal()) return;
+    if(screen==='projects') this.loadProjects();
+    else if(screen==='admin'){ this.loadProjects(); this.loadPeople(); }
+    else if(screen==='upload') this.loadProjects();
+  }
+
+  async loadProjects(){
+    if(!this.isReal()) return;
+    try {
+      const projects = await window.Censio.myProjects();
+      this.setState({ dbProjects: projects });
+      if(this.state.isTeam){ try { const ids=await window.Censio.myMemberships(); this.setState({ joinedIds: ids }); } catch(e){} }
+      // default the upload picker to the first project
+      if(projects[0] && !this.state.dbProjectId) this.setState({ uploadProject: projects[0].id });
+      // fetch current assets + a hero image per project (for cards / versions / download)
+      for(const p of projects){
+        const assets = await window.Censio.currentAssets(p.id);
+        this.setState(s=>({ dbAssetsByProject:{ ...s.dbAssetsByProject, [p.id]: assets } }));
+        if(assets[0]) this.signImg(assets[0].id);
+      }
+    } catch(e){ console.warn('loadProjects', e); }
+  }
+
+  async loadPeople(){
+    if(!this.isReal()) return;
+    try { const people = await window.Censio.allProfiles(); this.setState({ dbPeople: people }); }
+    catch(e){ console.warn('loadPeople', e); }
+  }
+
+  // sign a storage image once, cache the url in state, return current cached value
+  signImg(assetId){
+    if(!assetId || !window.Censio) return null;
+    const cached = this.state.dbImg[assetId];
+    if(cached!==undefined) return cached;
+    this.setState(s=>({ dbImg:{ ...s.dbImg, [assetId]: null } })); // mark in-flight
+    window.Censio.downloadUrl(assetId, 'original').then(r=>{
+      if(r && r.url) this.setState(s=>({ dbImg:{ ...s.dbImg, [assetId]: r.url } }));
+    }).catch(()=>{});
+    return null;
+  }
+  // CSS background value for an asset (signed image if ready, else gradient placeholder)
+  imgBg(assetId, fallback){
+    const u = assetId ? this.signImg(assetId) : null;
+    return u ? ("center/cover no-repeat url('"+u+"')") : (fallback || this.renderA());
+  }
+
+  async openReviewer(projectId, assetId){
+    this.setState({ dbProjectId: projectId });
+    this.go('reviewer');
+    if(!this.isReal()) return;
+    this.setState({ rvLoading:true, rvComments:null, rvAi:null, approved:false, tab:'mine', composer:null });
+    try {
+      const assets = this.state.dbAssetsByProject[projectId] || await window.Censio.currentAssets(projectId);
+      const asset = assetId ? (assets.find(a=>a.id===assetId)||assets[0]) : assets[0];
+      let prev = null;
+      if(asset && asset.supersedes_id) prev = await window.Censio.assetById(asset.supersedes_id);
+      this.setState({ rvAssets:assets, rvAsset:asset, rvPrev:prev, rvLoading:false });
+      if(asset){
+        this.signImg(asset.id); if(prev) this.signImg(prev.id); this.loadComments(asset.id);
+        window.Censio.myApprovals([asset.id]).then(ids=>{ this.setState({ approved: ids.indexOf(asset.id)!==-1 }); }).catch(()=>{});
+      }
+    } catch(e){ console.warn('openReviewer', e); this.setState({ rvLoading:false }); }
+  }
+
+  async loadComments(assetId){
+    if(!this.isReal() || !assetId) return;
+    try {
+      const rows = await window.Censio.getComments(assetId);
+      const myId = this.state.profile.id;
+      const pins = rows.map(c=>({
+        id:c.id, n:c.n, mine:c.author_id===myId,
+        author: c.author_id===myId ? 'You' : ((c.profiles&&c.profiles.full_name)||'Reviewer'),
+        role: (c.profiles&&c.profiles.role)||'', roleColor: this.roleColor((c.profiles&&c.profiles.role)||''),
+        tag: c.tag||'Other', x:Number(c.x), y:Number(c.y), shape:c.shape||null,
+        attachment: c.attachment_path||null, text:c.body, resolved:!!c.resolved,
+      }));
+      const maxN = pins.reduce((m,p)=>Math.max(m, p.n||0), 0);
+      this.setState({ rvComments: pins, nextN: maxN+1 });
+    } catch(e){ console.warn('loadComments', e); this.setState({ rvComments:[] }); }
+  }
+
+  roleColor(role){
+    const r=(role||'').toLowerCase();
+    if(r.includes('architect')) return '#e2241c';
+    if(r.includes('interior')) return '#c026d3';
+    if(r.includes('landscape')) return '#33a96e';
+    if(r.includes('client')) return '#c9a35b';
+    if(r.includes('lighting')) return '#d6a94e';
+    if(r.includes('team')||r.includes('admin')) return '#2f9bb5';
+    return '#9a9aa2';
+  }
 
   icons(){
     const E=React.createElement;
@@ -867,7 +995,8 @@ class Component extends DCLogic {
 
   renderVals() {
     const st = this.state;
-    const pins = st.pins || [];
+    const real = this.isReal();
+    const pins = real ? (st.rvComments || []) : (st.pins || []);
     const myPins = pins.filter(p=>p.mine);
     const allPins = pins;
 
@@ -971,16 +1100,18 @@ class Component extends DCLogic {
       return { label:t, style:{ fontSize:'13px', fontWeight:700, padding:'6px 11px', borderRadius:'100px', border:'1.5px solid '+(active?fg:'#26262b'), background: active?bg:'#17171b', color: active?fg:'#a6a6ac', cursor:'pointer' }, onPick:()=>this.setState(s=>({composer:{...s.composer, tag:t}})) };
     });
 
-    const aiSummary = [
-      { tag:'Material', text:'Change dining chair upholstery to tan leather (FS-04).' },
-      { tag:'Lighting', text:'Re-render island pendants at 3000K colour temperature.' },
-      { tag:'Layout', text:'RESOLVE FIRST: island position conflict (Architect vs Interior Designer).' },
-      { tag:'Furniture', text:'Prepare a darker timber floor variant for next round (Client request).' },
-    ].map(s=>{ const [bg,fg]=tagColor(s.tag); return { ...s, tagStyle:{ flex:'none', fontSize:'11px', fontWeight:800, padding:'3px 8px', borderRadius:'6px', background:bg, color:fg, height:'fit-content' } }; });
+    const aiV = this.aiVals(real, allPins, tagColor);
 
-    const requestedRoles = [
-      ['Client',true],['Architect',true],['Interior Designer',true],['Landscape Designer',true],['Lighting Designer',false]
-    ].map(([label,on])=>({ label, bg: on?'#241413':'#1e1e22', fg: on?'#e2241c':'#6e6e75' }));
+    let requestedRoles;
+    if(real){
+      const rr = (st.rvAsset && st.rvAsset.requested_roles) || [];
+      const list = Array.isArray(rr) ? rr : [];
+      requestedRoles = list.map(label=>({ label, bg:'#241413', fg:'#e2241c' }));
+    } else {
+      requestedRoles = [
+        ['Client',true],['Architect',true],['Interior Designer',true],['Landscape Designer',true],['Lighting Designer',false]
+      ].map(([label,on])=>({ label, bg: on?'#241413':'#1e1e22', fg: on?'#e2241c':'#6e6e75' }));
+    }
 
     return {
       // screens
@@ -989,14 +1120,16 @@ class Component extends DCLogic {
       ...this.uploadVals(), ...this.adminVals(), ...this.dlVals(), ...this.icons(),
 
       // rail identity
-      railRole: st.isTeam ? (st.teamRole==='admin' ? 'Administrator' : 'Ivolve Team') : 'Architect',
-      railName: st.isTeam ? (st.teamRole==='admin' ? 'Priya Nair' : 'Tom Reeves') : 'David Chen',
+      railRole: real ? (st.profile.role || (st.profile.is_admin?'Administrator':(st.profile.is_team?'Ivolve Team':'Reviewer'))) : (st.isTeam ? (st.teamRole==='admin' ? 'Administrator' : 'Ivolve Team') : 'Architect'),
+      railName: real ? (st.profile.full_name || st.profile.email || 'You') : (st.isTeam ? (st.teamRole==='admin' ? 'Priya Nair' : 'Tom Reeves') : 'David Chen'),
       railIsTeam: st.isTeam, railIsAdmin: st.isTeam && st.teamRole==='admin',
       isTeamProjects: st.screen==='projects' && st.isTeam, isConsultantProjects: st.screen==='projects' && !st.isTeam,
       ...this.teamProjectsVals(),
 
       // login
       isFirstTime: st.firstTime,
+      showTeamAccess: !st.connected,
+      showTeamHint: st.connected,
       loginTitle: st.firstTime ? 'Set your password' : 'Sign in to review',
       loginSubtitle: st.firstTime ? 'Welcome to Ivolve Review. Create a password to secure your account — you only do this once.' : 'Access your projects and review the latest CGIs and videos.',
       passwordLabel: st.firstTime ? 'Create password' : 'Password',
@@ -1027,37 +1160,40 @@ class Component extends DCLogic {
       toggleFirstTime: ()=>this.setState(s=>({firstTime:!s.firstTime})),
 
       // projects
-      userName: st.isTeam ? (st.teamRole==='admin'?'Priya Nair':'Tom Reeves') : 'David Chen',
+      userName: real ? (st.profile.full_name || st.profile.email || 'Welcome') : 'David Chen',
       roleLabel: this.roleLabel(),
       navigate: (s)=>this.go(s),
-      totalNeedsReview: 5, projectCount: 4,
+      ...this.consultantSummary(),
       clearHover: ()=>this.setState({hoverProject:null}),
       projects: this.projectData(),
 
       // reviewer header
-      assetTitle: 'Living Room — View 01', assetRev:'R3', assetType:'Living', prevRev:'R2',
-      assetFilename:'550_George_St_View01_Living_R3.jpg', assetUploaded:'Today, 9:42 AM',
+      ...this.reviewerHeaderVals(),
       backToProjects: ()=>this.go('projects'),
       toggleBrief: ()=>this.setState(s=>({briefOpen:!s.briefOpen})),
       briefOpen: st.briefOpen,
-      artistNoteCount: 2,
+      artistNoteCount: real ? ((st.rvAsset && st.rvAsset.artist_notes) ? 1 : 0) : 2,
       briefTabBtnStyle: { width:'40px', height:'40px', borderRadius:'11px', border:'none', display:'flex', alignItems:'center', justifyContent:'center', background: st.briefOpen?'#e2241c':'#1f1f24', color: st.briefOpen?'#fff':'#cfd5de', cursor:'pointer' },
       toggleDownload: ()=>this.setState(s=>({downloadOpen:!s.downloadOpen})),
       downloadOpen: st.downloadOpen,
-      downloadOriginal: ()=>{ this.setState({downloadOpen:false}); this._toast('Preparing PDF — the original '+'R3'+' render (550_George_St_View01_Living_R3.pdf) will download.'); },
-      downloadMarkup: ()=>{ this.setState({downloadOpen:false}); this._toast('Preparing PDF — your markups baked onto the render (550_George_St_View01_Living_R3_markup.pdf) will download.'); },
+      downloadOriginal: ()=>{ this.setState({downloadOpen:false}); this.doDownload('original'); },
+      downloadMarkup: ()=>{ this.setState({downloadOpen:false}); this.doDownload('markup'); },
       toggleSwipe: ()=>this.setState(s=>({swipe:!s.swipe})),
       swipeBtnStyle: { display:'flex', alignItems:'center', gap:'8px', height:'44px', padding:'0 16px', borderRadius:'10px', border:'1.5px solid '+(st.swipe?'#e2241c':'#2e2e34'), background: st.swipe?'#241413':'#17171b', fontSize:'15px', fontWeight:700, color: st.swipe?'#e2241c':'#d2d2d7', cursor:'pointer' },
-      submitReview: ()=>{ if(st.composer){ this._toast('Please finish or cancel your open note before submitting.'); return; } this.setState({tab:'ai'}); this._toast('Review submitted ✓  A PDF of your markups was emailed to the Ivolve team, and the review group was notified.'); },
-      approve: ()=>this.setState(s=>({approved:!s.approved})),
+      submitReview: ()=>this.submitReview(),
+      approve: ()=>this.toggleApprove(),
       approveLabel: st.approved ? 'Approved — locked' : 'Approve',
       approveBtnStyle: { display:'flex', alignItems:'center', gap:'8px', height:'44px', padding:'0 18px', borderRadius:'10px', border:'none', background: st.approved?'#33a96e':'#33a96e', color:'#fff', fontSize:'15px', fontWeight:700, cursor:'pointer', boxShadow:'0 2px 8px rgba(51,169,110,0.3)' },
 
       // artist notes
-      artistNotes: [
-        { initials:'PN', name:'Priya Nair', time:'Today, 9:42 AM', text:'R3 addresses the kitchen joinery comments from R2. Note: view photography is still pending from the photographer, so the window currently shows a placeholder sky.' },
-        { initials:'PN', name:'Priya Nair', time:'Today, 9:43 AM', text:'Please focus this round on materials and the island layout. Lighting is not yet final.' },
-      ],
+      artistNotes: real
+        ? ((st.rvAsset && st.rvAsset.artist_notes)
+            ? [{ initials:'IV', name:'Ivolve Team', time:this.relTime(st.rvAsset.created_at), text:st.rvAsset.artist_notes }]
+            : [])
+        : [
+            { initials:'PN', name:'Priya Nair', time:'Today, 9:42 AM', text:'R3 addresses the kitchen joinery comments from R2. Note: view photography is still pending from the photographer, so the window currently shows a placeholder sky.' },
+            { initials:'PN', name:'Priya Nair', time:'Today, 9:43 AM', text:'Please focus this round on materials and the island layout. Lighting is not yet final.' },
+          ],
       requestedRoles,
 
       // toolbar
@@ -1078,7 +1214,9 @@ class Component extends DCLogic {
 
       // stage
       stageRef: (el)=>{ this._stage = el; },
-      stageStyle, centerStyle, currentRender: this.renderA(), prevRender: this.renderB(),
+      stageStyle, centerStyle,
+      currentRender: real ? this.imgBg(st.rvAsset && st.rvAsset.id, this.renderA()) : this.renderA(),
+      prevRender: real ? this.imgBg(st.rvPrev && st.rvPrev.id, this.renderB()) : this.renderB(),
       stageWpx: (820*st.zoom)+'px', stageHpx:(540*st.zoom)+'px',
       swipeClipStyle, swipeHandleStyle,
       onStageClick: (e)=>this.onStageClick(e),
@@ -1089,15 +1227,15 @@ class Component extends DCLogic {
       stageHint: st.composer ? 'Add your comment in the panel — a note can’t be saved without it' : (st.tool==='pin' ? 'Click to add a note · drag any of your pins to move them' : (st.tool==='sketch' ? 'Click and drag to draw a freehand shape around an area' : (st.swipe?'Drag the handle to compare R3 with R2':'Scroll to zoom · drag to pan · hold middle mouse to pan'))),
 
       // right tabs
-      setTabMine: onTab('mine'), setTabEveryone: onTab('everyone'), setTabAi: onTab('ai'),
+      setTabMine: onTab('mine'), setTabEveryone: onTab('everyone'), setTabAi: ()=>this.openAiTab(),
       tab: st.tab, isMineTab: st.tab==='mine', isAiTab: st.tab==='ai',
       showCommentList: st.tab!=='ai',
       tabMineStyle: this.tabStyle(st.tab==='mine'), tabEveryoneStyle: this.tabStyle(st.tab==='everyone'), tabAiStyle: this.tabStyle(st.tab==='ai'),
-      myCount: myPins.length, everyoneCount: allPins.length, hasConflict: true,
+      myCount: myPins.length, everyoneCount: allPins.length, hasConflict: aiV.hasConflict,
       listPins,
 
       // ai
-      aiSummary, notifyConflict: ()=>{ this._toast('Email sent to David Chen (Architect) and Sarah Whitfield (Interior Designer) requesting resolution.'); },
+      ...aiV,
 
       // composer
       composerOpen, composerN: st.composer? st.composer.n : '',
@@ -1143,7 +1281,10 @@ class Component extends DCLogic {
   }
 
   _drawMove = (e)=>{ const c=this.relPct(e); if(!c) return; this.setState(s=>{ const last=s.drawPoints[s.drawPoints.length-1]; if(last && Math.hypot(c.px-last[0], c.py-last[1])<0.7) return null; return { drawPoints:[...s.drawPoints, [c.px,c.py]] }; }); };
-  _drawUp = (e)=>{ window.removeEventListener('mousemove', this._drawMove); window.removeEventListener('mouseup', this._drawUp); const pts=this.state.drawPoints; this._suppress=true; if(pts.length>=4){ if(this.state.redrawId){ const id=this.state.redrawId; this.setState(s=>({ drawing:false, redrawId:null, drawPoints:[], tool:'pin', pins: s.pins.map(p=> p.id===id ? {...p, shape:pts} : p) })); this._toast('Marked area updated.'); } else { const cx=pts.reduce((a,p)=>a+p[0],0)/pts.length; const cy=Math.min(...pts.map(p=>p[1])); this.setState({drawing:false}); this.openComposer({ x:cx, y:cy, shape:pts }); } } else { this.setState({drawing:false, drawPoints:[]}); } };
+  _pinsKey(){ return this.isReal() ? 'rvComments' : 'pins'; }
+  mutatePins(fn){ const k=this._pinsKey(); this.setState(s=>({ [k]: fn(s[k]||[]) })); }
+
+  _drawUp = (e)=>{ window.removeEventListener('mousemove', this._drawMove); window.removeEventListener('mouseup', this._drawUp); const pts=this.state.drawPoints; this._suppress=true; if(pts.length>=4){ if(this.state.redrawId){ const id=this.state.redrawId; this.mutatePins(arr=> arr.map(p=> p.id===id ? {...p, shape:pts} : p)); this.setState({ drawing:false, redrawId:null, drawPoints:[], tool:'pin' }); if(this.isReal()) window.Censio.updateComment(id, { shape:pts }).catch(()=>{}); this._toast('Marked area updated.'); } else { const cx=pts.reduce((a,p)=>a+p[0],0)/pts.length; const cy=Math.min(...pts.map(p=>p[1])); this.setState({drawing:false}); this.openComposer({ x:cx, y:cy, shape:pts }); } } else { this.setState({drawing:false, drawPoints:[]}); } };
 
   startPinDrag(e, pin){
     if(this.state.tool==='pan') return;
@@ -1155,8 +1296,8 @@ class Component extends DCLogic {
     window.addEventListener('mousemove', this._pinMove);
     window.addEventListener('mouseup', this._pinUp);
   }
-  _pinMove = (e)=>{ const d=this._pinDrag; if(!d) return; const dx=((e.clientX-d.sx)/d.rw)*100, dy=((e.clientY-d.sy)/d.rh)*100; if(Math.abs(e.clientX-d.sx)+Math.abs(e.clientY-d.sy)>3) d.moved=true; const cl=(v)=>Math.max(0,Math.min(100,v)); const nx=cl(d.ox+dx), ny=cl(d.oy+dy); const ns=d.shape?d.shape.map(pt=>[cl(pt[0]+dx),cl(pt[1]+dy)]):null; this.setState(s=>({ pins: s.pins.map(p=> p.id===d.id ? {...p, x:nx, y:ny, shape: ns!==null?ns:p.shape} : p) })); };
-  _pinUp = ()=>{ window.removeEventListener('mousemove', this._pinMove); window.removeEventListener('mouseup', this._pinUp); try { document.body.style.cursor=''; } catch(err){} const moved=this._pinDrag && this._pinDrag.moved; if(moved) this._suppress=true; this._pinDrag=null; this.setState({draggingPinId:null}); if(moved) this._toast('Note moved.'); };
+  _pinMove = (e)=>{ const d=this._pinDrag; if(!d) return; const dx=((e.clientX-d.sx)/d.rw)*100, dy=((e.clientY-d.sy)/d.rh)*100; if(Math.abs(e.clientX-d.sx)+Math.abs(e.clientY-d.sy)>3) d.moved=true; const cl=(v)=>Math.max(0,Math.min(100,v)); const nx=cl(d.ox+dx), ny=cl(d.oy+dy); const ns=d.shape?d.shape.map(pt=>[cl(pt[0]+dx),cl(pt[1]+dy)]):null; d.nx=nx; d.ny=ny; d.ns=ns; this.mutatePins(arr=> arr.map(p=> p.id===d.id ? {...p, x:nx, y:ny, shape: ns!==null?ns:p.shape} : p)); };
+  _pinUp = ()=>{ window.removeEventListener('mousemove', this._pinMove); window.removeEventListener('mouseup', this._pinUp); try { document.body.style.cursor=''; } catch(err){} const d=this._pinDrag; const moved=d && d.moved; if(moved) this._suppress=true; this._pinDrag=null; this.setState({draggingPinId:null}); if(moved){ if(this.isReal() && d){ const patch={ x:d.nx, y:d.ny }; if(d.ns!==null) patch.shape=d.ns; window.Censio.updateComment(d.id, patch).catch(()=>{}); } this._toast('Note moved.'); } };
 
   startPan(e){ this._panStart={ sx:e.clientX, sy:e.clientY, px:this.state.panX, py:this.state.panY }; window.addEventListener('mousemove', this._panMove); window.addEventListener('mouseup', this._panUp); }
   _panMove = (e)=>{ const p=this._panStart; if(!p) return; this.setState({ panX:p.px+(e.clientX-p.sx), panY:p.py+(e.clientY-p.sy) }); };
@@ -1178,8 +1319,24 @@ class Component extends DCLogic {
   saveComment(){
     const c=this.state.composer; const txt=this._composer? this._composer.value.trim() : '';
     if(!txt){ if(this._composer) this._composer.focus(); this._toast('Please add a comment describing this mark before saving.'); return; }
+    const real=this.isReal();
     if(c.editId){
-      this.setState(s=>({ pins: s.pins.map(p=> p.id===c.editId ? { ...p, text:txt, tag:c.tag, attachment:c.attachment||null } : p), composer:null, drawPoints:[] }));
+      this.mutatePins(arr=> arr.map(p=> p.id===c.editId ? { ...p, text:txt, tag:c.tag, attachment:c.attachment||null } : p));
+      this.setState({ composer:null, drawPoints:[] });
+      if(real) window.Censio.updateComment(c.editId, { body:txt, tag:c.tag, attachment_path:c.attachment||null }).catch(e=>this._toast('Could not save edit.'));
+      this.setState({ rvAi:null }); // comments changed → AI needs re-run
+      return;
+    }
+    if(real){
+      const asset=this.state.rvAsset; if(!asset){ this._toast('No asset loaded.'); return; }
+      const prof=this.state.profile;
+      this.setState({busy:true});
+      window.Censio.addComment(asset.id, { n:c.n, x:c.x, y:c.y, shape:c.shape||null, tag:c.tag, text:txt, attachment:c.attachment||null })
+        .then(({data,error})=>{
+          if(error||!data){ this._toast('Could not save note: '+(error?error.message:'unknown error')); this.setState({busy:false}); return; }
+          const np={ id:data.id, n:data.n, mine:true, author:'You', role:prof.role||'', roleColor:this.roleColor(prof.role||''), tag:data.tag, x:Number(data.x), y:Number(data.y), shape:data.shape||null, attachment:data.attachment_path||null, text:data.body };
+          this.setState(s=>({ rvComments:[...(s.rvComments||[]), np], nextN:s.nextN+1, composer:null, drawPoints:[], busy:false, rvAi:null }));
+        }).catch(()=>{ this._toast('Save failed — check your connection.'); this.setState({busy:false}); });
       return;
     }
     const np={ id:'p'+Date.now(), n:c.n, mine:true, author:'You', role:'Architect', roleColor:'#e2241c', tag:c.tag, x:c.x, y:c.y, shape:c.shape||null, attachment:c.attachment||null, text:txt };
@@ -1198,26 +1355,140 @@ class Component extends DCLogic {
 
   teamProjectsVals(){
     const st=this.state;
+    const real=this.isReal();
     const q=(st.teamSearch||'').toLowerCase().trim();
-    const list=this.projectsMaster().filter(p=> !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q));
-    const joinedCount=Object.keys(st.joined).filter(k=>st.joined[k]).length;
+    const master = real
+      ? (st.dbProjects||[]).map(p=>({ id:p.id, name:p.name, code:p.code||'', meta:p.meta||'', render: this.imgBg(((st.dbAssetsByProject[p.id]||[])[0]||{}).id, this.renderA()) }))
+      : this.projectsMaster();
+    const list=master.filter(p=> !q || p.name.toLowerCase().includes(q) || (p.code||'').toLowerCase().includes(q));
+    const isJoined=(id)=> real ? (st.joinedIds.indexOf(id)!==-1) : !!st.joined[id];
+    const joinedCount= real ? st.joinedIds.length : Object.keys(st.joined).filter(k=>st.joined[k]).length;
     return {
       teamSearchVal: st.teamSearch,
       onTeamSearch: (e)=>this.setState({teamSearch:e.target.value}),
       teamJoinedCount: joinedCount,
       teamProjects: list.map(p=>{
-        const joined=!!st.joined[p.id];
+        const joined=isJoined(p.id);
         return { ...p, joined,
-          onOpen: ()=>this.go('reviewer'),
-          onJoin: (e)=>{ e.stopPropagation(); this.setState(s=>({joined:{...s.joined,[p.id]:!s.joined[p.id]}})); if(!joined) this._toast('You\u2019ve been added to '+p.name+'. It will now appear in your project list.'); },
+          onOpen: ()=> real ? this.openReviewer(p.id) : this.go('reviewer'),
+          onJoin: (e)=>{ e.stopPropagation(); this.joinToggle(p, joined); },
           joinBtnStyle: { height:'42px', padding:'0 16px', borderRadius:'10px', border: joined?'1.5px solid #2e2e34':'none', background: joined?'#17171b':'#e2241c', color: joined?'#33a96e':'#fff', fontSize:'14px', fontWeight:700, cursor:'pointer', flex:'none' },
           joinLabel: joined?'✓ On this project':'＋ Add me' };
       }),
     };
   }
 
+  joinToggle(p, joined){
+    if(this.isReal()){
+      if(joined){ this._toast('You\u2019re already on '+p.name+'.'); return; }
+      window.Censio.joinProject(p.id).then(({error})=>{
+        if(error){ this._toast('Could not join: '+error.message); return; }
+        this.setState(s=>({ joinedIds:[...s.joinedIds, p.id] }));
+        this._toast('You\u2019ve been added to '+p.name+'. It will now appear in your project list.');
+        this.loadProjects();
+      }).catch(()=>this._toast('Join failed.'));
+      return;
+    }
+    this.setState(s=>({joined:{...s.joined,[p.id]:!s.joined[p.id]}}));
+    if(!joined) this._toast('You\u2019ve been added to '+p.name+'.');
+  }
+
+  parseFilename(name){
+    const base=(name||'').replace(/\.[^.]+$/,'');
+    const ext=((name||'').match(/\.([^.]+)$/)||[])[1]||'';
+    const view=(base.match(/view[_\- ]?(\d{1,3})/i)||[])[1]||'';
+    const rev=(base.match(/[_\- ]r(\d+)\b/i)||[])[1];
+    const media=/^(mp4|mov|webm|avi|m4v)$/i.test(ext)?'video':'image';
+    let type='';
+    const m=base.match(/view[_\- ]?\d{1,3}[_\- ](.+?)[_\- ]r\d+/i);
+    if(m) type=m[1].replace(/[_-]/g,' ').trim();
+    return { view, revision: rev!=null?parseInt(rev,10):null, type, media, ext };
+  }
+  onUpFile(e){
+    const f=e.target && e.target.files && e.target.files[0]; if(!f) return;
+    this._upFile=f;
+    try { this._upUrl = "center/cover no-repeat url('"+URL.createObjectURL(f)+"')"; } catch(err){ this._upUrl=null; }
+    const parsed=this.parseFilename(f.name);
+    this.setState({ uploaded:true, uploadAsVideo: parsed.media==='video' });
+  }
+  doUpload(){
+    const st=this.state; const file=this._upFile;
+    if(!file){ this._toast('Choose a file to upload first.'); return; }
+    const projects=st.dbProjects||[];
+    const proj=projects.find(p=>p.id===st.uploadProject)||projects[0];
+    if(!proj){ this._toast('No project selected.'); return; }
+    const parsed=this.parseFilename(file.name);
+    const roles=Object.keys(st.reviewers).filter(k=>st.reviewers[k] && k!=='Other');
+    const notes=this._upNotes?this._upNotes.value.trim():'';
+    const supersedesId=(st.dbAssetsByProject[proj.id]||[]).some(a=>a.id===st.supersedeId)?st.supersedeId:null;
+    this.setState({busy:true}); this._toast('Uploading…');
+    window.Censio.uploadAsset(proj.id, file, { revision:parsed.revision, view:parsed.view, type:parsed.type, media:parsed.media, roles, notes, supersedesId })
+      .then(res=>{
+        if(res && res.error){ this._toast('Upload failed: '+res.error.message); this.setState({busy:false}); return; }
+        window.Censio.notify({ type:'upload', projectId:proj.id, roles }).catch(()=>{});
+        this._upFile=null; if(this._upInput) this._upInput.value=''; if(this._upNotes) this._upNotes.value='';
+        this.setState({busy:false, uploaded:false});
+        this._toast('Upload submitted ✓  Email alert sent to '+roles.length+' reviewer group'+(roles.length===1?'':'s')+'.');
+        this.loadProjects();
+      }).catch(()=>{ this._toast('Upload failed — check your connection.'); this.setState({busy:false}); });
+  }
+  reviewerListVals(){
+    const st=this.state;
+    return ['Client','Architect','Interior Designer','Landscape Designer','Marketing','Real Estate Agent','Urban Planner','Lighting Designer','Project Manager','Other'].map(r=>{
+      const on = st.reviewers[r];
+      return { label:r, isOther: r==='Other', onToggle:()=>this.setState(s=>({reviewers:{...s.reviewers,[r]:!s.reviewers[r]}})),
+        boxStyle:{ width:'24px', height:'24px', borderRadius:'7px', border:'2px solid '+(on?'#e2241c':'#3a3a41'), background:on?'#e2241c':'#17171b', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'15px', fontWeight:800, flex:'none' },
+        rowStyle:{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'12px', border:'1.5px solid '+(on?'#3a2420':'#26262b'), background:on?'#1a1411':'#17171b', cursor:'pointer' },
+        checked:on };
+    });
+  }
+  realUploadVals(){
+    const st=this.state;
+    const projects=st.dbProjects||[];
+    const curProj=projects.find(p=>p.id===st.uploadProject)||projects[0];
+    const projName=curProj?curProj.name:'Select a project';
+    const file=this._upFile;
+    const parsed=file?this.parseFilename(file.name):null;
+    const isVideo=parsed?parsed.media==='video':st.uploadAsVideo;
+    const rows=parsed?[
+      ['Project',projName,'#e2241c'],
+      ['View',parsed.view||'—','#f4f4f2'],
+      ['Type',parsed.type||'—','#c9a35b'],
+      ['Revision',parsed.revision!=null?('R'+parsed.revision+' · Revision '+parsed.revision):'—','#33a96e'],
+    ]:[];
+    const assets=curProj?(st.dbAssetsByProject[curProj.id]||[]):[];
+    const versions=assets.map(a=>({ id:a.id, label:(a.type||'View')+' · View '+(a.view_no||''), rev:'R'+(a.revision!=null?a.revision:'?'), when:this.relTime(a.created_at), render:this.imgBg(a.id,this.renderB()),
+      selected: st.supersedeId===a.id, onPick:()=>this.setState({supersedeId:a.id}),
+      cardStyle:{ display:'flex', gap:'12px', alignItems:'center', padding:'10px', borderRadius:'12px', border:'2px solid '+(st.supersedeId===a.id?'#e2241c':'#26262b'), background:st.supersedeId===a.id?'#1a1411':'#17171b', cursor:'pointer' } }));
+    const q=(st.uploadSearch||'').toLowerCase().trim();
+    return {
+      upFilename: file?file.name:'No file selected yet',
+      upParsed: rows.map(([k,v,c])=>({ k, v, style:{ fontSize:'14px', fontWeight:800, color:c } })),
+      upUploaded: !!file, upNotUploaded: !file,
+      upKind: isVideo?'video':'CGI image',
+      upDrop: ()=>{ if(this._upInput) this._upInput.click(); },
+      upReset: ()=>{ this._upFile=null; if(this._upInput) this._upInput.value=''; this.setState({uploaded:false}); },
+      upFileRef:(el)=>{ this._upInput=el; }, onUpFile:(e)=>this.onUpFile(e), upNotesRef:(el)=>{ this._upNotes=el; },
+      upRender: file? (this._upUrl||this.renderA()) : (isVideo?this.renderB():this.renderA()),
+      upIsVideo: isVideo,
+      upSetImage: ()=>this.setState({uploadAsVideo:false}),
+      upSetVideo: ()=>this.setState({uploadAsVideo:true}),
+      upImgTabStyle: this.segStyle(!isVideo), upVidTabStyle: this.segStyle(isVideo),
+      reviewerList: this.reviewerListVals(), versions,
+      upProjectName: projName,
+      upPickerOpen: st.uploadPickerOpen,
+      upTogglePicker: ()=>this.setState(s=>({uploadPickerOpen:!s.uploadPickerOpen})),
+      upSearchVal: st.uploadSearch,
+      onUpSearch: (e)=>this.setState({uploadSearch:e.target.value}),
+      upProjectOptions: projects.filter(p=> !q || p.name.toLowerCase().includes(q) || (p.code||'').toLowerCase().includes(q)).map(p=>({ id:p.id, name:p.name, code:p.code||'', render:this.imgBg(((st.dbAssetsByProject[p.id]||[])[0]||{}).id,this.renderA()), current:p.id===(curProj&&curProj.id), onPick:()=>this.setState({uploadProject:p.id, uploadPickerOpen:false, uploadSearch:'', supersedeId:null}),
+        optStyle:{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'10px', cursor:'pointer', background: p.id===(curProj&&curProj.id)?'#241413':'transparent', border:'1px solid '+(p.id===(curProj&&curProj.id)?'#3a2420':'transparent') } })),
+      upSubmit: ()=>this.doUpload(),
+    };
+  }
+
   uploadVals(){
     const st=this.state;
+    if(this.isReal()) return this.realUploadVals();
     const filename = st.uploadAsVideo ? '550_George_St_View03_Aerial_Flythrough_R2.mp4' : '550_George_St_View01_Living_R3.jpg';
     const parsed = st.uploadAsVideo
       ? [['Project',this.projName(),'#e2241c'],['View','03','#f4f4f2'],['Type','Aerial Flythrough','#c9a35b'],['Revision','R2 · Revision 2','#33a96e']]
@@ -1242,6 +1513,7 @@ class Component extends DCLogic {
       upKind: st.uploadAsVideo ? 'video' : 'CGI image',
       upDrop: ()=>this.setState({uploaded:true}),
       upReset: ()=>this.setState({uploaded:false}),
+      upFileRef:(el)=>{ this._upInput=el; }, onUpFile:(e)=>this.setState({uploaded:true}), upNotesRef:(el)=>{ this._upNotes=el; },
       upRender: st.uploadAsVideo ? this.renderB() : this.renderA(),
       upIsVideo: st.uploadAsVideo,
       upSetImage: ()=>this.setState({uploadAsVideo:false, uploaded:false}),
@@ -1262,6 +1534,7 @@ class Component extends DCLogic {
   segStyle(active){ return { flex:1, height:'42px', border:'none', borderRadius:'9px', background: active?'#2a2a30':'transparent', color: active?'#f4f4f2':'#a6a6ac', fontSize:'15px', fontWeight:700, cursor:'pointer', boxShadow: active?'0 1px 3px rgba(0,0,0,0.12)':'none' }; }
 
   adminVals(){
+    if(this.isReal()) return this.realAdminVals();
     const st=this.state;
     const q=(st.adminSearch||'').toLowerCase().trim();
     const projStatusStyle=(s)=>({ fontSize:'13px', fontWeight:800, color: s==='Active'?'#33a96e':(s==='On hold'?'#c9a35b':'#7a7a82'), background: s==='Active'?'#16271f':(s==='On hold'?'#2a2417':'#1e1e22'), padding:'4px 10px', borderRadius:'6px' });
@@ -1326,6 +1599,78 @@ class Component extends DCLogic {
       addConsultant: ()=>this._toast('Add consultant form would open here.') };
   }
 
+  realAdminVals(){
+    const st=this.state;
+    const q=(st.adminSearch||'').toLowerCase().trim();
+    const projStatusStyle=(s)=>({ fontSize:'13px', fontWeight:800, color: s==='Active'?'#33a96e':(s==='On hold'?'#c9a35b':'#7a7a82'), background: s==='Active'?'#16271f':(s==='On hold'?'#2a2417':'#1e1e22'), padding:'4px 10px', borderRadius:'6px' });
+    const projects=(st.dbProjects||[]).map(p=>({
+      name:p.name, code:p.code||'', status:p.status||'Active',
+      reviewers: (p.project_members && p.project_members[0] && p.project_members[0].count) || 0,
+      updated: this.relTime(p.updated_at), statusStyle: projStatusStyle(p.status||'Active'),
+    }));
+    const match=(p)=> !q || p.name.toLowerCase().includes(q) || (p.code||'').toLowerCase().includes(q);
+    const activeProjects=projects.filter(p=>p.status==='Active'&&match(p)).sort((a,b)=>a.name.localeCompare(b.name));
+    const inactiveProjects=projects.filter(p=>p.status!=='Active'&&match(p)).sort((a,b)=>a.name.localeCompare(b.name));
+
+    const conStatusStyle=(s)=>({ fontSize:'13px', fontWeight:800, color: s==='Active'?'#33a96e':'#c9a35b', background: s==='Active'?'#16271f':'#2a2417', padding:'4px 10px', borderRadius:'6px' });
+    const people=st.dbPeople||[];
+    const byCo={};
+    people.forEach(p=>{ const co=(p.companies&&p.companies.name)||'Unaffiliated'; (byCo[co]=byCo[co]||[]).push(p); });
+    const initialsOf=(n)=> (n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const companyGroups=Object.keys(byCo).sort((a,b)=>a.localeCompare(b)).map(co=>{
+      const mem=byCo[co];
+      const expanded=!!st.expandedCompanies[co];
+      const roles=[...new Set(mem.map(m=>m.role).filter(Boolean))];
+      const badge=co.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      return {
+        name:co, badge, summary: roles.join(' · ')||'Reviewers',
+        countLabel: mem.length+(mem.length===1?' person':' people'),
+        statusLabel:'All active',
+        statusStyle:{ fontSize:'13px', fontWeight:800, color:'#33a96e', background:'#16271f', padding:'4px 10px', borderRadius:'6px', flex:'none' },
+        chevronStyle:{ display:'inline-block', width:'16px', color:'#7a7a82', fontSize:'15px', transition:'transform .15s ease', transform: expanded?'rotate(90deg)':'none' },
+        expanded,
+        onToggle: ()=>this.setState(s=>({ expandedCompanies:{ ...s.expandedCompanies, [co]: !s.expandedCompanies[co] } })),
+        members: mem.map(c=>({ name:c.full_name||c.email||'—', role:c.role||(c.is_team?'Ivolve Team':'Reviewer'), email:c.email||'', status:'Active', initials:initialsOf(c.full_name||c.email), avatar:this.roleColor(c.role||''),
+          statusStyle:conStatusStyle('Active'), pending:false,
+          onInvite:(e)=>{ e.stopPropagation(); this.adminReset(c.email); },
+          onReset:(e)=>{ e.stopPropagation(); this.adminReset(c.email); } }))
+      };
+    });
+    return {
+      activeProjects, inactiveProjects,
+      noActive: activeProjects.length===0, noInactive: inactiveProjects.length===0,
+      adminSearchVal: st.adminSearch,
+      onAdminSearch:(e)=>this.setState({adminSearch:e.target.value}),
+      companyGroups,
+      addProject: ()=>this.adminAddProject(),
+      addConsultant: ()=>this.adminAddConsultant(),
+    };
+  }
+  adminReset(email){
+    if(!email){ this._toast('No email on file for this person.'); return; }
+    window.Censio.resetPassword(email).then(({error})=>{ this._toast(error?('Could not send reset: '+error.message):('Password reset link sent to '+email+'.')); }).catch(()=>this._toast('Reset failed.'));
+  }
+  adminAddProject(){
+    const name=window.prompt('New project name:'); if(!name) return;
+    const code=window.prompt('Project code (optional, e.g. GEO-550):')||null;
+    const meta=window.prompt('Short description (optional):')||null;
+    window.Censio.createProject({ name, code, meta }).then(res=>{
+      if(res && res.error){ this._toast('Could not create project: '+res.error.message); return; }
+      this._toast('Project “'+name+'” created.'); this.loadProjects();
+    }).catch(()=>this._toast('Create failed.'));
+  }
+  adminAddConsultant(){
+    const full_name=window.prompt('Full name:'); if(!full_name) return;
+    const email=window.prompt('Email address:'); if(!email) return;
+    const role=window.prompt('Role (e.g. Architect, Client, Interior Designer):')||'';
+    const company=window.prompt('Company name:')||'';
+    this._toast('Inviting '+full_name+'…');
+    window.Censio.inviteConsultant({ full_name, email, role, company }).then(r=>{
+      if(r && r.ok){ this._toast('Invite sent to '+email+' with a secure sign-in link.'); this.loadPeople(); }
+      else { this._toast('Could not invite: '+((r&&r.error)||'unknown error')); }
+    }).catch(()=>this._toast('Invite failed — is the Worker deployed?'));
+  }
+
   projectAssets(id){
     const A=this.renderA(), B=this.renderB();
     const map={
@@ -1336,10 +1681,46 @@ class Component extends DCLogic {
     };
     return (map[id]||[]).map((a,i)=>({ id:id+'-'+i, label:a[0], file:a[1], rev:a[2], size:a[3], render:a[4] }));
   }
-  openDownload(p){ const assets=this.projectAssets(p.id); const m={}; assets.forEach(a=>m[a.id]=true); this.setState({dlProjectId:p.id, dlChecked:m}); }
+  openDownload(p){
+    if(this.isReal()){
+      const assets=this.state.dbAssetsByProject[p.id]||[];
+      const m={}; assets.forEach(a=>m[a.id]=true);
+      this.setState({dlProjectId:p.id, dlChecked:m});
+      return;
+    }
+    const assets=this.projectAssets(p.id); const m={}; assets.forEach(a=>m[a.id]=true); this.setState({dlProjectId:p.id, dlChecked:m});
+  }
+  realDlVals(){
+    const st=this.state; const id=st.dlProjectId;
+    const proj=(st.dbProjects||[]).find(p=>p.id===id);
+    const assets=st.dbAssetsByProject[id]||[];
+    const isChecked=(aid)=> st.dlChecked[aid]!==false;
+    const selected=assets.filter(a=>isChecked(a.id));
+    const countSel=()=>(st.dbAssetsByProject[id]||[]).filter(a=>st.dlChecked[a.id]!==false);
+    const doDl=(mode)=>{
+      const sel=countSel(); if(!sel.length){ this._toast('Select at least one CGI to download.'); return; }
+      this.setState({dlProjectId:null}); this._toast('Preparing '+sel.length+' download'+(sel.length===1?'':'s')+'…');
+      sel.forEach((a,i)=>{ setTimeout(()=>{ window.Censio.downloadUrl(a.id,'pdf').then(r=>{ if(r&&r.url) window.open(r.url,'_blank'); }).catch(()=>{}); }, i*350); });
+    };
+    return {
+      dlOpen:true, dlProjectName: proj?proj.name:'', dlTotalCount: assets.length,
+      dlSelectedCount: selected.length, dlSelectedSize: selected.length+' file'+(selected.length===1?'':'s'),
+      dlAssets: assets.map(a=>{ const ck=isChecked(a.id); return {
+        id:a.id, label:(a.type||'View')+' — View '+(a.view_no||''), file:a.filename||'', rev:'R'+(a.revision!=null?a.revision:'?'), size:'', render:this.imgBg(a.id,this.renderA()), checked:ck,
+        onToggle:()=>this.setState(s=>({dlChecked:{...s.dlChecked,[a.id]: !(s.dlChecked[a.id]!==false)}})),
+        rowStyle:{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'10px', cursor:'pointer', background: ck?'#1b1b1f':'transparent', border:'1px solid '+(ck?'#2e2e34':'transparent') },
+        boxStyle:{ width:'22px', height:'22px', borderRadius:'6px', border:'2px solid '+(ck?'#e2241c':'#3a3a41'), background:ck?'#e2241c':'transparent', color:'#fff', fontSize:'13px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', flex:'none' } }; }),
+      dlSelectAll: ()=>{ const m={}; assets.forEach(a=>m[a.id]=true); this.setState({dlChecked:m}); },
+      dlSelectNone: ()=>{ const m={}; assets.forEach(a=>m[a.id]=false); this.setState({dlChecked:m}); },
+      closeDownload: ()=>this.setState({dlProjectId:null}),
+      dlIndividual: ()=>doDl('individual'),
+      dlZip: ()=>doDl('zip'),
+    };
+  }
   dlVals(){
     const st=this.state; const id=st.dlProjectId;
     if(!id) return { dlOpen:false };
+    if(this.isReal()) return this.realDlVals();
     const projNames={george:'550 George Street', wharf:'Barangaroo Wharf', park:'The Parkline Residences', quay:'Quay Quarter Lofts'};
     const assets=this.projectAssets(id);
     const isChecked=(aid)=> st.dlChecked[aid]!==false;
@@ -1361,7 +1742,40 @@ class Component extends DCLogic {
     };
   }
 
+  consultantSummary(){
+    if(this.isReal()){
+      const projects=this.state.dbProjects||[];
+      let need=0;
+      projects.forEach(p=>{ const assets=this.state.dbAssetsByProject[p.id]||[]; need+=assets.filter(a=>!a.approved).length; });
+      return { totalNeedsReview: need, projectCount: projects.length };
+    }
+    return { totalNeedsReview: 5, projectCount: 4 };
+  }
+
+  realProjectData(){
+    const st=this.state;
+    const projects=st.dbProjects||[];
+    return projects.map(p=>{
+      const assets=st.dbAssetsByProject[p.id]||[];
+      const reviewCount=assets.filter(a=>!a.approved).length;
+      const needsReview=reviewCount>0;
+      const hero=assets[0]?this.imgBg(assets[0].id, this.renderA()):this.renderA();
+      const thumbs=assets.slice(0,3).map(a=>({ rev:'R'+(a.revision!=null?a.revision:'?')+' · '+(a.type||a.view_no||'View'), swatch:'#26262b', render:this.imgBg(a.id, this.renderA()), border: a.approved?'#26262b':'#c9a35b', _id:a.id }));
+      return {
+        id:p.id, name:p.name, code:p.code||'', meta:p.meta||'', needsReview, reviewCount,
+        updated:this.relTime(p.updated_at), swatch:'#26262b', render:hero,
+        teamLabel: p.meta || (assets.length+' render'+(assets.length===1?'':'s')),
+        team:[], thumbs,
+        hovered: st.hoverProject===p.id, notHovered: st.hoverProject!==p.id,
+        cardStyle:{ background:'#161619', border:'1px solid '+(st.hoverProject===p.id?'#3a2420':'#26262b'), borderRadius:'16px', overflow:'hidden', cursor:'pointer', boxShadow: st.hoverProject===p.id?'0 12px 30px rgba(0,0,0,0.35)':'0 1px 3px rgba(0,0,0,0.2)', transition:'box-shadow .2s, border-color .2s' },
+        onOpen: ()=>this.openReviewer(p.id), onHover: ()=>this.setState({hoverProject:p.id}),
+        onDownload: (e)=>{ e.stopPropagation(); this.openDownload({id:p.id}); },
+      };
+    }).map(p=>({ ...p, thumbs: p.thumbs.map(t=>({ ...t, onOpen:(e)=>{ e.stopPropagation(); this.openReviewer(p.id, t._id); } })) }));
+  }
+
   projectData(){
+    if(this.isReal()) return this.realProjectData();
     const st=this.state;
     const mk=(initials,color)=>({initials,color});
     const list=[
@@ -1386,6 +1800,109 @@ class Component extends DCLogic {
       onDownload: (e)=>{ e.stopPropagation(); this.openDownload(p); },
       thumbs: p.thumbs.map(t=>({...t, onOpen:(e)=>{ e.stopPropagation(); this.go('reviewer'); }})),
     }));
+  }
+
+  relTime(iso){ if(!iso) return ''; const d=new Date(iso); const diff=(Date.now()-d.getTime())/1000; if(diff<60) return 'just now'; if(diff<3600){ const m=Math.floor(diff/60); return m+' min ago'; } if(diff<86400){ const h=Math.floor(diff/3600); return h+' hr ago'; } if(diff<604800){ const dd=Math.floor(diff/86400); return dd+' day'+(dd===1?'':'s')+' ago'; } return d.toLocaleDateString(); }
+
+  reviewerHeaderVals(){
+    const st=this.state;
+    if(this.isReal()){
+      const a=st.rvAsset;
+      if(!a) return { assetTitle: st.rvLoading?'Loading…':'No asset selected', assetRev:'', assetType:'', prevRev:'—', assetFilename:'', assetUploaded:'' };
+      const type=a.type||'View';
+      return {
+        assetTitle: type + (a.view_no ? (' — View '+a.view_no) : ''),
+        assetRev: 'R'+(a.revision!=null?a.revision:'?'),
+        assetType: type,
+        prevRev: st.rvPrev ? ('R'+st.rvPrev.revision) : '—',
+        assetFilename: a.filename||'', assetUploaded: this.relTime(a.created_at),
+      };
+    }
+    return { assetTitle:'Living Room — View 01', assetRev:'R3', assetType:'Living', prevRev:'R2', assetFilename:'550_George_St_View01_Living_R3.jpg', assetUploaded:'Today, 9:42 AM' };
+  }
+
+  aiVals(real, allPins, tagColor){
+    const st=this.state;
+    const demo={
+      conflicts:[{a:3,b:4,summary:'Kitchen island position — direct contradiction'}],
+      unclear:[{n:5,why:'Too vague to action — which plants, what colour, how dense? Ask Marcus for specifics.'}],
+      actions:[
+        {tag:'Material',text:'Change dining chair upholstery to tan leather (FS-04).'},
+        {tag:'Lighting',text:'Re-render island pendants at 3000K colour temperature.'},
+        {tag:'Layout',text:'RESOLVE FIRST: island position conflict (Architect vs Interior Designer).'},
+        {tag:'Furniture',text:'Prepare a darker timber floor variant for next round (Client request).'},
+      ]
+    };
+    const running = real && !st.rvAi;
+    const raw = real ? (st.rvAi || {conflicts:[],unclear:[],actions:[]}) : demo;
+    const conflicts=raw.conflicts||[], unclear=raw.unclear||[], actions=raw.actions||[];
+    const byN={}; allPins.forEach(p=>{ byN[p.n]=p; });
+    const who=(p,n)=> p ? (p.author+' · '+(p.role||'')+' · Note '+n) : ('Note '+n);
+    const aiConflicts=conflicts.map(c=>{ const A=byN[c.a], B=byN[c.b]; return {
+      summary:c.summary||'Conflicting requests',
+      aColor:A?A.roleColor:'#e2241c', aWho:who(A,c.a), aText:A?A.text:'',
+      bColor:B?B.roleColor:'#c026d3', bWho:who(B,c.b), bText:B?B.text:'',
+      onNotify:()=>this.notifyConflict(A,B) }; });
+    const aiUnclear=unclear.map(u=>{ const P=byN[u.n]; return { who:P?(P.author+' · '+(P.role||'')):('Note '+u.n), quote:P?P.text:'', why:u.why||'' }; });
+    const aiSummary=actions.map(s=>{ const [bg,fg]=tagColor(s.tag); return { tag:s.tag, text:s.text, tagStyle:{ flex:'none', fontSize:'11px', fontWeight:800, padding:'3px 8px', borderRadius:'6px', background:bg, color:fg, height:'fit-content' } }; });
+    const total=allPins.length;
+    return {
+      aiHeadline: running ? 'Claude is reviewing the comments…' : ('Claude reviewed all '+total+' comment'+(total===1?'':'s')),
+      aiSubline: running ? 'Cross-checking for contradictions and clarity — this takes a few seconds.' : ('Cross-checked for contradictions, clarity and grouped by type. Found '+conflicts.length+' conflict'+(conflicts.length===1?'':'s')+' and '+unclear.length+' unclear note'+(unclear.length===1?'':'s')+'.'),
+      aiHasConflicts: conflicts.length>0, aiConflicts,
+      aiHasUnclear: unclear.length>0, aiUnclear,
+      aiSummary, hasConflict: conflicts.length>0,
+    };
+  }
+
+  notifyConflict(A,B){
+    if(this.isReal()){
+      const roles=[A&&A.role, B&&B.role].filter(Boolean);
+      window.Censio.notify({ type:'conflict', projectId:this.state.dbProjectId, roles, extra:'Two reviewers left conflicting comments on this render. Please coordinate to resolve.' }).catch(()=>{});
+    }
+    const names=[A&&A.author, B&&B.author].filter(Boolean).join(' and ');
+    this._toast('Resolution request sent'+(names?(' to '+names):'')+'.');
+  }
+
+  openAiTab(){
+    this.setState({ tab:'ai', composer:null });
+    if(this.isReal() && this.state.rvAsset && !this.state.rvAi){
+      window.Censio.aiReview(this.state.rvAsset.id).then(r=>{
+        this.setState({ rvAi: (r && !r.error) ? r : {conflicts:[],unclear:[],actions:[]} });
+        if(r && r.error) this._toast('AI review unavailable right now.');
+      }).catch(()=>{ this.setState({ rvAi:{conflicts:[],unclear:[],actions:[]} }); this._toast('AI review failed.'); });
+    }
+  }
+
+  doDownload(mode){
+    if(!this.isReal()){ this._toast(mode==='markup'?'Preparing a PDF with your markups…':'Preparing the original render as a PDF…'); return; }
+    const a=this.state.rvAsset; if(!a){ this._toast('No asset to download.'); return; }
+    this._toast('Preparing download…');
+    window.Censio.downloadUrl(a.id, mode).then(r=>{ if(r&&r.url){ window.open(r.url,'_blank'); } else { this._toast('Could not prepare the file.'); } }).catch(()=>this._toast('Download failed.'));
+  }
+
+  submitReview(){
+    if(this.state.composer){ this._toast('Please finish or cancel your open note before submitting.'); return; }
+    this.openAiTab();
+    if(this.isReal()){
+      const a=this.state.rvAsset;
+      window.Censio.notify({ type:'submitted', projectId:this.state.dbProjectId, assetName:a?a.filename:'', extra:'A reviewer has submitted their markups for this render.' }).catch(()=>{});
+    }
+    this._toast('Review submitted ✓  The Ivolve team has been notified.');
+  }
+
+  toggleApprove(){
+    const real=this.isReal(); const willApprove=!this.state.approved;
+    this.setState(s=>({approved:!s.approved}));
+    if(real){
+      const a=this.state.rvAsset; if(!a) return;
+      if(willApprove){
+        window.Censio.approveAsset(a.id).then((res)=>{ if(res&&res.error) this._toast('Could not record approval: '+res.error.message); }).catch(()=>{});
+        window.Censio.notify({ type:'approved', projectId:this.state.dbProjectId, assetName:a.filename, extra:'A reviewer approved this render.' }).catch(()=>{});
+      } else {
+        window.Censio.unapproveAsset(a.id).catch(()=>{});
+      }
+    }
   }
 }
 </script>
