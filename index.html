@@ -767,6 +767,7 @@
                         </div>
                         <div><span style="{{ c.statusStyle }}">{{ c.status }}</span></div>
                         <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                          <button onClick="{{ c.onManageProjects }}" style="height: 36px; padding: 0 13px; border-radius: 9px; border: 1.5px solid #2e2e34; background: #1b1b1f; color: #d2d2d7; font-size: 13px; font-weight: 700; cursor: pointer;" style-hover="border-color: #e2241c;">Assign projects</button>
                           <button onClick="{{ c.onReset }}" style="height: 36px; padding: 0 13px; border-radius: 9px; border: 1.5px solid #2e2e34; background: #1b1b1f; color: #d2d2d7; font-size: 13px; font-weight: 700; cursor: pointer;" style-hover="border-color: #e2241c;">Set password</button>
                         </div>
                       </div>
@@ -851,7 +852,71 @@
   </sc-if>
 
 </div>
-</x-dc>
+
+<sc-if value="{{ accountOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeAccount }}" style="position: fixed; inset: 0; z-index: 70; background: rgba(0,0,0,0.62); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; padding: 24px;">
+    <div onClick="{{ stopProp }}" style="width: 460px; max-width: 100%; max-height: 86vh; background: #161619; border: 1px solid #2e2e34; border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden;">
+      <div style="padding: 22px 24px 18px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid #26262b;">
+        <div style="width: 52px; height: 52px; border-radius: 50%; background: #2f9bb5; color: #fff; font-size: 18px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex: none;">{{ acctInitials }}</div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 19px; font-weight: 800;">{{ acctName }}</div>
+          <div style="font-size: 13px; color: #7a7a82; font-weight: 700;">{{ acctRole }}</div>
+        </div>
+        <button onClick="{{ closeAccount }}" style="background: #1f1f24; border: none; width: 36px; height: 36px; border-radius: 50%; color: #a6a6ac; font-size: 17px; cursor: pointer;">✕</button>
+      </div>
+      <div data-scroll style="flex: 1; overflow-y: auto; padding: 18px 24px;">
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: #7a7a82; font-weight: 600; margin-bottom: 6px;">EMAIL</div>
+        <div style="font-size: 15px; font-weight: 600; color: #d2d2d7; margin-bottom: 20px;">{{ acctEmail }}</div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: #7a7a82; font-weight: 600; margin-bottom: 8px;">YOUR PROJECTS · {{ acctProjectCount }}</div>
+        <sc-for list="{{ acctProjects }}" as="pr" hint-placeholder-count="2">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid #1f1f23;">
+            <span style="font-size: 15px; font-weight: 700;">{{ pr.name }}</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7a7a82; margin-left: auto;">{{ pr.code }}</span>
+          </div>
+        </sc-for>
+        <sc-if value="{{ acctNoProjects }}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; color: #7a7a82; font-weight: 600; padding: 8px 0;">You’re not on any projects yet.</div></sc-if>
+      </div>
+      <div style="padding: 16px 24px; border-top: 1px solid #26262b; display: flex; gap: 10px;">
+        <button onClick="{{ acctChangePw }}" style="flex: 1; height: 46px; border-radius: 11px; border: 1.5px solid #2e2e34; background: #1b1b1f; color: #f4f4f2; font-size: 15px; font-weight: 700; cursor: pointer;" style-hover="border-color: #e2241c;">Change password</button>
+        <button onClick="{{ acctSignOut }}" style="height: 46px; padding: 0 18px; border-radius: 11px; border: none; background: #e2241c; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;">Sign out</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ upmOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeUserProjects }}" style="position: fixed; inset: 0; z-index: 70; background: rgba(0,0,0,0.62); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; padding: 24px;">
+    <div onClick="{{ stopProp }}" style="width: 560px; max-width: 100%; max-height: 86vh; background: #161619; border: 1px solid #2e2e34; border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden;">
+      <div style="padding: 22px 24px 16px;">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+          <div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #7a7a82; font-weight: 600; margin-bottom: 8px;">PROJECT ASSIGNMENTS</div>
+            <div style="font-size: 22px; font-weight: 800;">{{ upmUserName }}</div>
+            <div style="font-size: 14px; color: #a6a6ac; font-weight: 600; margin-top: 6px;">Tick the projects this person can access. Active projects first.</div>
+          </div>
+          <button onClick="{{ closeUserProjects }}" style="background: #1f1f24; border: none; width: 36px; height: 36px; border-radius: 50%; color: #a6a6ac; font-size: 17px; cursor: pointer;">✕</button>
+        </div>
+      </div>
+      <div data-scroll style="flex: 1; overflow-y: auto; padding: 4px 16px 12px; border-top: 1px solid #26262b;">
+        <sc-for list="{{ upmProjects }}" as="p" hint-placeholder-count="4">
+          <div onClick="{{ p.onToggle }}" style="{{ p.rowStyle }}">
+            <div style="{{ p.boxStyle }}"><sc-if value="{{ p.checked }}" hint-placeholder-val="{{ false }}">✓</sc-if></div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 15px; font-weight: 800;">{{ p.name }}</div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7a7a82;">{{ p.code }}</div>
+            </div>
+            <span style="{{ p.statusStyle }}">{{ p.status }}</span>
+          </div>
+        </sc-for>
+        <sc-if value="{{ upmEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding: 22px; font-size: 14px; color: #7a7a82; font-weight: 600; text-align: center;">No projects yet — create one first.</div></sc-if>
+      </div>
+      <div style="padding: 16px 24px; border-top: 1px solid #26262b; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 14px; color: #7a7a82; font-weight: 600;">On {{ upmCount }} project(s)</span>
+        <button onClick="{{ closeUserProjects }}" style="height: 46px; padding: 0 22px; border-radius: 11px; border: none; background: #e2241c; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;">Done</button>
+      </div>
+    </div>
+  </div>
+</sc-if></x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
 class Component extends DCLogic {
   state = {
@@ -919,6 +984,11 @@ class Component extends DCLogic {
     mustChange: false,
     addOpen: false,
     addIsTeam: false,
+    accountOpen: false,
+    upmUserId: null,
+    upmUserName: '',
+    upmIds: null,
+    addRows: null,
     busy: false,
   };
 
@@ -987,8 +1057,21 @@ class Component extends DCLogic {
 
   go(screen){
     if(screen==='signout'){ this.doSignOut(); return; }
+    if(screen==='account'){ this.openAccount(); return; }
     this.setState({ screen });
     this.loadFor(screen);
+  }
+
+  openAccount(){ this.setState({ accountOpen:true }); if(this.isReal() && !this.state.dbProjects) this.loadProjects(); }
+  changeMyPasswordPrompt(){
+    const pw = window.prompt('Enter a new password (at least 6 characters):');
+    if(!pw) return;
+    if(pw.length<6){ this._toast('Password must be at least 6 characters.'); return; }
+    this._toast('Updating password…');
+    window.Censio.changeMyPassword(pw).then(res=>{
+      if(res && res.error){ this._toast('Could not update password: '+res.error.message); return; }
+      this._toast('Password updated ✓');
+    }).catch(()=>this._toast('Update failed.'));
   }
 
   doSignOut(){
@@ -1016,6 +1099,7 @@ class Component extends DCLogic {
       // fetch current assets + a hero image per project (for cards / versions / download)
       for(const p of projects){
         const assets = await window.Censio.currentAssets(p.id);
+        this._rememberPaths(assets);
         this.setState(s=>({ dbAssetsByProject:{ ...s.dbAssetsByProject, [p.id]: assets } }));
         if(assets[0]) this.signImg(assets[0].id);
       }
@@ -1034,11 +1118,20 @@ class Component extends DCLogic {
     const cached = this.state.dbImg[assetId];
     if(cached!==undefined) return cached;
     this.setState(s=>({ dbImg:{ ...s.dbImg, [assetId]: null } })); // mark in-flight
-    window.Censio.downloadUrl(assetId, 'original').then(r=>{
-      if(r && r.url) this.setState(s=>({ dbImg:{ ...s.dbImg, [assetId]: r.url } }));
-    }).catch(()=>{});
+    const path = this._paths && this._paths[assetId];
+    const done = (url)=>{ if(url) this.setState(s=>({ dbImg:{ ...s.dbImg, [assetId]: url } })); };
+    if(path && window.Censio.signedImage){
+      // direct Supabase signed URL (no Worker round-trip)
+      window.Censio.signedImage(path, 'renders').then(u=>{
+        if(u) done(u);
+        else window.Censio.downloadUrl(assetId, 'original').then(r=>{ if(r && r.url) done(r.url); }).catch(()=>{});
+      }).catch(()=>{ window.Censio.downloadUrl(assetId, 'original').then(r=>{ if(r && r.url) done(r.url); }).catch(()=>{}); });
+    } else {
+      window.Censio.downloadUrl(assetId, 'original').then(r=>{ if(r && r.url) done(r.url); }).catch(()=>{});
+    }
     return null;
   }
+  _rememberPaths(assets){ if(!this._paths) this._paths={}; (assets||[]).forEach(a=>{ if(a && a.id) this._paths[a.id]=a.storage_path; }); }
   // CSS background value for an asset (signed image if ready, else gradient placeholder)
   imgBg(assetId, fallback){
     const u = assetId ? this.signImg(assetId) : null;
@@ -1057,6 +1150,7 @@ class Component extends DCLogic {
       if(asset && asset.supersedes_id) prev = await window.Censio.assetById(asset.supersedes_id);
       this.setState({ rvAssets:assets, rvAsset:asset, rvPrev:prev, rvLoading:false });
       if(asset){
+        this._rememberPaths(assets); if(prev) this._rememberPaths([prev]);
         this.signImg(asset.id); if(prev) this.signImg(prev.id); this.loadComments(asset.id);
         window.Censio.myApprovals([asset.id]).then(ids=>{ this.setState({ approved: ids.indexOf(asset.id)!==-1 }); }).catch(()=>{});
       }
@@ -1252,7 +1346,7 @@ class Component extends DCLogic {
       // screens
       isLogin: screen==='login', isProjects: screen==='projects', isReviewer: screen==='reviewer',
       isUpload: screen==='upload', isAdmin: screen==='admin', isTeamLogin: screen==='teamlogin',
-      ...this.uploadVals(), ...this.adminVals(), ...this.dlVals(), ...this.membersModalVals(), ...this.addPeopleVals(), ...this.icons(),
+      ...this.uploadVals(), ...this.adminVals(), ...this.dlVals(), ...this.membersModalVals(), ...this.addPeopleVals(), ...this.accountVals(), ...this.userProjectsVals(), ...this.icons(),
 
       // rail identity
       railRole: real ? (st.profile.role || (st.profile.is_admin?'Administrator':(st.profile.is_team?'Ivolve Team':'Reviewer'))) : (st.isTeam ? (st.teamRole==='admin' ? 'Administrator' : 'Ivolve Team') : 'Architect'),
@@ -1793,6 +1887,7 @@ class Component extends DCLogic {
     const mkMember=(c)=>({ name:c.full_name||c.email||'—', role:roleOf(c), email:c.email||'', status: c.must_change_password?'Pending first login':'Active', initials:initialsOf(c.full_name||c.email), avatar:this.roleColor(c.role||(c.is_team?'team':'')),
       statusStyle:conStatusStyle(c.must_change_password?'Invited':'Active'), pending:false,
       password: c.visible_password||'', hasPassword: !!c.visible_password,
+      onManageProjects:(e)=>{ e.stopPropagation(); this.openUserProjects(c); },
       onInvite:(e)=>{ e.stopPropagation(); this.adminSetPassword(c); },
       onReset:(e)=>{ e.stopPropagation(); this.adminSetPassword(c); } });
     const mkGroup=(key, name, badge, mem)=>{
@@ -1905,8 +2000,8 @@ class Component extends DCLogic {
     if(!pw) return;
     if(pw.length<6){ this._toast('Password must be at least 6 characters.'); return; }
     this._toast('Updating password…');
-    window.Censio.setUserPassword({ userId:c.id, password:pw, mustChange:false }).then(r=>{
-      if(r && r.ok){ this._toast('Password updated for '+(c.full_name||c.email)+'.'); this.loadPeople(); }
+    window.Censio.setUserPassword({ userId:c.id, password:pw, mustChange:true }).then(r=>{
+      if(r && r.ok){ this._toast('Password set for '+(c.full_name||c.email)+' — they’ll be asked to change it next sign-in.'); this.loadPeople(); }
       else { this._toast('Could not set password: '+((r&&r.error)||'error')); }
     }).catch(()=>this._toast('Set password failed.'));
   }
@@ -1929,6 +2024,65 @@ class Component extends DCLogic {
       closeAddPeople: ()=>this.setState({addOpen:false}),
       stopProp:(e)=>e.stopPropagation(),
       doCreateUsers: ()=>this.doCreateUsers(),
+    };
+  }
+
+  // ---- account panel (rail avatar) ----
+  accountVals(){
+    const st=this.state;
+    if(!st.accountOpen) return { accountOpen:false };
+    const p=st.profile||{};
+    const projects=(st.dbProjects||[]).map(pr=>({ id:pr.id, name:pr.name, code:pr.code||'' }));
+    return {
+      accountOpen:true,
+      acctName: p.full_name || p.email || 'You',
+      acctEmail: p.email || '',
+      acctRole: p.is_admin?'Administrator':(p.role||(p.is_team?'Ivolve Team':'Reviewer')),
+      acctInitials: (p.full_name||p.email||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+      acctProjects: projects,
+      acctProjectCount: projects.length,
+      acctNoProjects: projects.length===0,
+      acctChangePw: ()=>this.changeMyPasswordPrompt(),
+      acctSignOut: ()=>{ this.setState({accountOpen:false}); this.doSignOut(); },
+      closeAccount: ()=>this.setState({accountOpen:false}),
+      stopProp:(e)=>e.stopPropagation(),
+    };
+  }
+
+  // ---- assign one user to projects (admin) ----
+  openUserProjects(c){
+    if(!this.isReal()){ this._toast('Project assignment runs on the live site.'); return; }
+    this.setState({ upmUserId:c.id, upmUserName:(c.full_name||c.email||c.name||'this person'), upmIds:null });
+    if(!this.state.dbProjects) this.loadProjects();
+    window.Censio.memberProjects(c.id).then(ids=>this.setState({ upmIds:ids })).catch(()=>this.setState({ upmIds:[] }));
+  }
+  toggleUserProject(projectId){
+    const uid=this.state.upmUserId; if(!uid) return;
+    const has=(this.state.upmIds||[]).indexOf(projectId)!==-1;
+    if(has){ this.setState(s=>({ upmIds:(s.upmIds||[]).filter(x=>x!==projectId) })); window.Censio.removeMember(projectId,uid).catch(()=>this._toast('Could not remove.')); }
+    else { this.setState(s=>({ upmIds:[...(s.upmIds||[]), projectId] })); window.Censio.addMember(projectId,uid).catch(()=>this._toast('Could not add.')); }
+  }
+  closeUserProjects(){ this.setState({ upmUserId:null }); this.loadProjects(); }
+  userProjectsVals(){
+    const st=this.state;
+    if(!st.upmUserId) return { upmOpen:false };
+    const ids=st.upmIds||[];
+    const all=(st.dbProjects||[]).map(p=>({ id:p.id, name:p.name, code:p.code||'', status:p.status||'Active', updated:this.relTime(p.updated_at) }));
+    const active=all.filter(p=>p.status==='Active');
+    const inactive=all.filter(p=>p.status!=='Active');
+    const ordered=[...active, ...inactive];
+    const row=(p)=>{ const checked=ids.indexOf(p.id)!==-1; return {
+      id:p.id, name:p.name, code:p.code, status:p.status, dim: p.status!=='Active', checked,
+      onToggle:()=>this.toggleUserProject(p.id),
+      rowStyle:{ display:'flex', alignItems:'center', gap:'12px', padding:'11px 12px', borderRadius:'10px', cursor:'pointer', background: checked?'#1b1b1f':'transparent', border:'1px solid '+(checked?'#2e2e34':'transparent'), opacity: p.status!=='Active'?0.7:1 },
+      boxStyle:{ width:'22px', height:'22px', borderRadius:'6px', border:'2px solid '+(checked?'#e2241c':'#3a3a41'), background:checked?'#e2241c':'transparent', color:'#fff', fontSize:'13px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', flex:'none' },
+      statusStyle:{ fontSize:'12px', fontWeight:800, color: p.status==='Active'?'#33a96e':'#7a7a82', background: p.status==='Active'?'#16271f':'#1e1e22', padding:'3px 8px', borderRadius:'6px', flex:'none' } }; };
+    return {
+      upmOpen:true, upmUserName: st.upmUserName,
+      upmCount: ids.length, upmEmpty: all.length===0,
+      upmProjects: ordered.map(row),
+      closeUserProjects: ()=>this.closeUserProjects(),
+      stopProp:(e)=>e.stopPropagation(),
     };
   }
   membersModalVals(){

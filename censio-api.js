@@ -85,6 +85,10 @@ export async function projectMembers(projectId) {
     .eq("project_id", projectId);
   return data || [];
 }
+export async function memberProjects(profileId) {
+  const { data } = await db.from("project_members").select("project_id").eq("profile_id", profileId);
+  return (data || []).map((r) => r.project_id);
+}
 export async function addMember(projectId, profileId, isApprover) {
   return db.from("project_members").upsert({ project_id: projectId, profile_id: profileId, is_approver: !!isApprover });
 }
@@ -114,6 +118,14 @@ export async function currentAssets(projectId) {
 export async function assetById(assetId) {
   const { data } = await db.from("assets").select("*").eq("id", assetId).single();
   return data;
+}
+// Direct signed URL for an image in storage (1h). Works for anyone allowed to
+// read the object by storage RLS (team, or project members via schema_v6).
+export async function signedImage(path, bucket) {
+  if (!path) return null;
+  const { data, error } = await db.storage.from(bucket || "renders").createSignedUrl(path, 3600);
+  if (error || !data) return null;
+  return data.signedUrl;
 }
 export async function uploadAsset(projectId, file, meta) {
   const path = `${projectId}/${Date.now()}_${file.name}`;
