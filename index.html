@@ -674,6 +674,22 @@
               </div>
 
               <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 18px; padding: 20px 22px;">
+                <div style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;" onClick="{{ upToggleWhitecard }}">
+                  <div style="{{ upWcBoxStyle }}"><sc-if value="{{ upWhitecard }}" hint-placeholder-val="{{ false }}">✓</sc-if></div>
+                  <div style="flex: 1;">
+                    <div style="font-size: 16px; font-weight: 800;">This is a whitecard angle option</div>
+                    <div style="font-size: 14px; color: #a6a6ac; font-weight: 500; margin-top: 3px;">Reviewers vote on options for {{ upSlotLabel }}; the authoriser locks the chosen angle.</div>
+                  </div>
+                </div>
+                <sc-if value="{{ upWhitecard }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top: 14px;">
+                    <div style="font-size: 13px; font-weight: 700; color: #d2d2d7; margin-bottom: 6px;">Option label</div>
+                    <input ref="{{ upOptionRef }}" defaultValue="A" placeholder="A / B / C…" style="width: 120px; height: 44px; border: 1.5px solid #2e2e34; border-radius: 10px; padding: 0 14px; font-size: 15px; font-weight: 700; background: #131316; color: #f4f4f2;" style-focus="border-color: #c9a35b;" />
+                  </div>
+                </sc-if>
+              </div>
+
+              <div style="background: #1b1b1f; border: 1px solid #26262b; border-radius: 18px; padding: 20px 22px;">
                 <div style="font-size: 16px; font-weight: 800; margin-bottom: 12px;">Note for the reviewing team</div>
                 <textarea ref="{{ upNotesRef }}" placeholder="e.g. This update does not yet include view photography — awaiting final photos." style="width: 100%; min-height: 92px; border: 1.5px solid #2e2e34; border-radius: 12px; padding: 13px 15px; font-size: 15px; font-weight: 500; resize: vertical; line-height: 1.5; background: #131316; color: #f4f4f2;" style-focus="border-color: #e2241c; box-shadow: 0 0 0 4px rgba(226,36,28,0.1);"></textarea>
               </div>
@@ -689,7 +705,7 @@
                     </div>
                   </sc-for>
                 </div>
-                <input placeholder="Other — type a custom role…" style="width: 100%; height: 46px; border: 1.5px solid #26262b; border-radius: 10px; padding: 0 14px; font-size: 15px; font-weight: 500; margin-top: 10px; background: #131316; color: #f4f4f2;" style-focus="border-color: #e2241c;" />
+                <input ref="{{ upCustomRoleRef }}" placeholder="Other — type a custom role…" style="width: 100%; height: 46px; border: 1.5px solid #26262b; border-radius: 10px; padding: 0 14px; font-size: 15px; font-weight: 500; margin-top: 10px; background: #131316; color: #f4f4f2;" style-focus="border-color: #e2241c;" />
               </div>
 
               <button onClick="{{ upSubmit }}" style="height: 58px; background: #e2241c; color: #fff; border: none; border-radius: 14px; font-size: 18px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(226,36,28,0.3);" style-hover="background: #be1a14;">Submit &amp; send email alert →</button>
@@ -1048,6 +1064,9 @@ class Component extends DCLogic {
     rvAi: null,              // reviewer: AI review result
     rvLoading: false,
     rvSwitcherOpen: false,
+    upWhitecard: false,
+    rvVotes: {},
+    rvMyVotes: [],
     dbPeople: null,          // admin: profiles[]
     dbProjectId: null,       // project context for reviewer/download
     joinedIds: [],           // team: project ids I've joined
@@ -1220,7 +1239,7 @@ class Component extends DCLogic {
     this.setState({ dbProjectId: projectId });
     this.go('reviewer');
     if(!this.isReal()) return;
-    this.setState({ rvLoading:true, rvComments:null, rvAi:null, approved:false, tab:'mine', composer:null });
+    this.setState({ rvLoading:true, rvComments:null, rvAi:null, approved:false, tab: this.state.isTeam ? 'everyone' : 'mine', composer:null });
     try {
       const assets = this.state.dbAssetsByProject[projectId] || await window.Censio.currentAssets(projectId);
       const asset = assetId ? (assets.find(a=>a.id===assetId)||assets[0]) : assets[0];
@@ -1230,6 +1249,9 @@ class Component extends DCLogic {
       if(asset){
         this._rememberPaths(assets); if(prev) this._rememberPaths([prev]);
         this.signImg(asset.id); if(prev) this.signImg(prev.id); this.loadComments(asset.id);
+        const wcIds=(assets||[]).filter(a=>a.stage==='whitecard').map(a=>a.id);
+        if(wcIds.length) window.Censio.voteData(wcIds).then(v=>this.setState({ rvVotes:v.counts, rvMyVotes:v.mine })).catch(()=>{});
+        else this.setState({ rvVotes:{}, rvMyVotes:[] });
         window.Censio.myApprovals([asset.id]).then(ids=>{ this.setState({ approved: ids.indexOf(asset.id)!==-1 }); }).catch(()=>{});
       }
     } catch(e){ console.warn('openReviewer', e); this.setState({ rvLoading:false }); }
@@ -1242,8 +1264,8 @@ class Component extends DCLogic {
       const myId = this.state.profile.id;
       const pins = rows.map(c=>({
         id:c.id, n:c.n, mine:c.author_id===myId,
-        author: c.author_id===myId ? 'You' : ((c.profiles&&c.profiles.full_name)||'Reviewer'),
-        role: (c.profiles&&c.profiles.role)||'', roleColor: this.roleColor((c.profiles&&c.profiles.role)||''),
+        author: c.author_id===myId ? 'You' : (c.author_name || (c.profiles&&c.profiles.full_name) || 'Reviewer'),
+        role: c.author_role || (c.profiles&&c.profiles.role) || '', roleColor: this.roleColor(c.author_role || (c.profiles&&c.profiles.role) || ''),
         tag: c.tag||'Other', x:Number(c.x), y:Number(c.y), shape:c.shape||null,
         attachment: c.attachment_path||null, text:c.body, resolved:!!c.resolved,
         vetoed: !!c.vetoed, vetoedBy: (c.vetoer&&c.vetoer.full_name)||'',
@@ -1271,6 +1293,60 @@ class Component extends DCLogic {
     if((p.role||'').toLowerCase().includes('client')) return true;
     const proj=(this.state.dbProjects||[]).find(x=>x.id===this.state.dbProjectId);
     return !!(proj && proj.authoriser_id===p.id);
+  }
+  canLockAngle(){
+    if(!this.isReal()) return false;
+    const p=this.state.profile||{};
+    if(p.is_admin) return true;
+    const proj=(this.state.dbProjects||[]).find(x=>x.id===this.state.dbProjectId);
+    return !!(proj && proj.authoriser_id===p.id);
+  }
+  voteFor(asset){
+    if(!asset) return;
+    const myVoted=(this.state.rvMyVotes||[]).indexOf(asset.id)!==-1;
+    const sibs=(this.state.rvAssets||[]).filter(a=>a.stage==='whitecard' && a.slot===asset.slot);
+    if(myVoted){
+      this.setState(s=>({ rvMyVotes:(s.rvMyVotes||[]).filter(x=>x!==asset.id), rvVotes:{...s.rvVotes, [asset.id]:Math.max(0,(s.rvVotes[asset.id]||1)-1)} }));
+      if(this.isReal()) window.Censio.clearVote(asset.id).catch(()=>{});
+      return;
+    }
+    this.setState(s=>{
+      const mine=new Set(s.rvMyVotes||[]); const counts={...s.rvVotes};
+      sibs.forEach(sb=>{ if(mine.has(sb.id)){ mine.delete(sb.id); counts[sb.id]=Math.max(0,(counts[sb.id]||1)-1); } });
+      mine.add(asset.id); counts[asset.id]=(counts[asset.id]||0)+1;
+      return { rvMyVotes:[...mine], rvVotes:counts };
+    });
+    if(this.isReal()){
+      sibs.forEach(sb=>{ if(sb.id!==asset.id) window.Censio.clearVote(sb.id).catch(()=>{}); });
+      window.Censio.castVote(asset.id).catch(()=>{});
+    }
+    this._toast('Vote recorded for this angle.');
+  }
+  lockAngleNow(asset){
+    if(!asset) return; const newL=!asset.angle_locked;
+    this.setState(s=>({ rvAsset: (s.rvAsset&&s.rvAsset.id===asset.id)?{...s.rvAsset, angle_locked:newL}:s.rvAsset, rvAssets:(s.rvAssets||[]).map(a=>a.id===asset.id?{...a,angle_locked:newL}:a) }));
+    if(this.isReal()) window.Censio.lockAngle(asset.id, newL).then(res=>{ if(res&&res.error) this._toast('Could not lock: '+res.error.message); }).catch(()=>this._toast('Lock failed.'));
+    this._toast(newL?'Angle locked \u2713 \u2014 this view is now fixed.':'Angle unlocked.');
+  }
+  whitecardVals(){
+    const st=this.state; const real=this.isReal(); const a=st.rvAsset;
+    if(!(real && a && a.stage==='whitecard')) return { isWhitecard:false };
+    const count=(st.rvVotes&&st.rvVotes[a.id])||0;
+    const voted=(st.rvMyVotes||[]).indexOf(a.id)!==-1;
+    return {
+      isWhitecard:true,
+      wcOption: a.option_label?('Option '+a.option_label):'Whitecard angle',
+      wcSlot: a.slot||'this view',
+      wcVoted: voted,
+      wcVoteLabel: voted ? ('\u2713 You voted \u00b7 '+count+' vote'+(count===1?'':'s')) : ('Vote for this angle'+(count?(' \u00b7 '+count):'')),
+      wcVoteStyle: { display:'flex', alignItems:'center', gap:'8px', height:'40px', padding:'0 16px', borderRadius:'10px', border:'none', background: voted?'#33a96e':'#c9a35b', color: voted?'#fff':'#14110a', fontSize:'14px', fontWeight:800, cursor:'pointer' },
+      onVote: ()=>this.voteFor(a),
+      wcLocked: !!a.angle_locked,
+      wcCanLock: this.canLockAngle(),
+      wcLockLabel: a.angle_locked ? '\ud83d\udd12 Locked \u2014 unlock' : 'Lock this angle',
+      wcLockStyle: { height:'40px', padding:'0 16px', borderRadius:'10px', border:'1.5px solid '+(a.angle_locked?'#33a96e':'#2e2e34'), background: a.angle_locked?'#16271f':'#17171b', color: a.angle_locked?'#33a96e':'#d2d2d7', fontSize:'14px', fontWeight:800, cursor:'pointer' },
+      onLock: ()=>this.lockAngleNow(a),
+    };
   }
   toggleVeto(pin){
     const newV=!pin.vetoed;
@@ -1680,7 +1756,7 @@ class Component extends DCLogic {
       const asset=this.state.rvAsset; if(!asset){ this._toast('No asset loaded.'); return; }
       const prof=this.state.profile;
       this.setState({busy:true});
-      window.Censio.addComment(asset.id, { n:c.n, x:c.x, y:c.y, shape:c.shape||null, tag:c.tag, text:txt, attachment:c.attachment||null })
+      window.Censio.addComment(asset.id, { n:c.n, x:c.x, y:c.y, shape:c.shape||null, tag:c.tag, text:txt, attachment:c.attachment||null, authorName: prof.full_name||prof.email||'Reviewer', authorRole: prof.role||(prof.is_team?'Ivolve Team':'') })
         .then(({data,error})=>{
           if(error||!data){ this._toast('Could not save note: '+(error?error.message:'unknown error')); this.setState({busy:false}); return; }
           const np={ id:data.id, n:data.n, mine:true, author:'You', role:prof.role||'', roleColor:this.roleColor(prof.role||''), tag:data.tag, x:Number(data.x), y:Number(data.y), shape:data.shape||null, attachment:data.attachment_path||null, text:data.body };
@@ -1784,10 +1860,15 @@ class Component extends DCLogic {
     if(!proj){ this._toast('No project selected.'); return; }
     const parsed=this.parseFilename(file.name);
     const roles=Object.keys(st.reviewers).filter(k=>st.reviewers[k] && k!=='Other');
+    const custom=(this._upCustomRole && this._upCustomRole.value.trim())||'';
+    if(custom) custom.split(',').map(s=>s.trim()).filter(Boolean).forEach(r=>{ if(roles.indexOf(r)===-1) roles.push(r); });
     const notes=this._upNotes?this._upNotes.value.trim():'';
     const supersedesId=(st.dbAssetsByProject[proj.id]||[]).some(a=>a.id===st.supersedeId)?st.supersedeId:null;
+    const isWC=st.upWhitecard;
+    const slot = parsed.view ? ('View'+parsed.view) : null;
+    const optionLabel = isWC ? ((this._upOption && this._upOption.value.trim()) || 'A') : null;
     this.setState({busy:true}); this._toast('Uploading…');
-    window.Censio.uploadAsset(proj.id, file, { revision:parsed.revision, view:parsed.view, type:parsed.type, media:parsed.media, roles, notes, supersedesId })
+    window.Censio.uploadAsset(proj.id, file, { revision:parsed.revision, view:parsed.view, type:parsed.type, media:parsed.media, roles, notes, supersedesId, stage: isWC?'whitecard':'cgi', slot: isWC?slot:null, optionLabel })
       .then(res=>{
         if(res && res.error){ this._toast('Upload failed: '+res.error.message); this.setState({busy:false}); return; }
         window.Censio.notify({ type:'upload', projectId:proj.id, roles }).catch(()=>{});
@@ -1849,6 +1930,12 @@ class Component extends DCLogic {
       upProjectOptions: projects.filter(p=> !q || p.name.toLowerCase().includes(q) || (p.code||'').toLowerCase().includes(q)).map(p=>({ id:p.id, name:p.name, code:p.code||'', render:this.imgBg(((st.dbAssetsByProject[p.id]||[])[0]||{}).id,this.renderA()), current:p.id===(curProj&&curProj.id), onPick:()=>this.setState({uploadProject:p.id, uploadPickerOpen:false, uploadSearch:'', supersedeId:null}),
         optStyle:{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'10px', cursor:'pointer', background: p.id===(curProj&&curProj.id)?'#241413':'transparent', border:'1px solid '+(p.id===(curProj&&curProj.id)?'#3a2420':'transparent') } })),
       upSubmit: ()=>this.doUpload(),
+      upWhitecard: st.upWhitecard,
+      upToggleWhitecard: ()=>this.setState(s=>({upWhitecard:!s.upWhitecard})),
+      upWcBoxStyle:{ width:'24px', height:'24px', borderRadius:'7px', border:'2px solid '+(st.upWhitecard?'#c9a35b':'#3a3a41'), background:st.upWhitecard?'#c9a35b':'#17171b', display:'flex', alignItems:'center', justifyContent:'center', color:'#14110a', fontSize:'15px', fontWeight:800, flex:'none' },
+      upOptionRef:(el)=>{ this._upOption=el; },
+      upCustomRoleRef:(el)=>{ this._upCustomRole=el; },
+      upSlotLabel: parsed && parsed.view ? ('View '+parsed.view) : '—',
     };
   }
 
@@ -1895,6 +1982,10 @@ class Component extends DCLogic {
       upProjectOptions: this.projectsMaster().filter(p=>{ const q=(st.uploadSearch||'').toLowerCase().trim(); return !q||p.name.toLowerCase().includes(q)||p.code.toLowerCase().includes(q); }).map(p=>({ ...p, current: p.id===st.uploadProject, onPick:()=>this.setState({uploadProject:p.id, uploadPickerOpen:false, uploadSearch:''}),
         optStyle:{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'10px', cursor:'pointer', background: p.id===st.uploadProject?'#241413':'transparent', border:'1px solid '+(p.id===st.uploadProject?'#3a2420':'transparent') } })),
       upSubmit: ()=>{ const picked=Object.keys(st.reviewers).filter(k=>st.reviewers[k]).length; this._toast('Upload submitted ✓  Email alert sent to '+picked+' reviewer group'+(picked===1?'':'s')+' across the project team.'); },
+      upWhitecard: st.upWhitecard, upToggleWhitecard: ()=>this.setState(s=>({upWhitecard:!s.upWhitecard})),
+      upWcBoxStyle:{ width:'24px', height:'24px', borderRadius:'7px', border:'2px solid '+(st.upWhitecard?'#c9a35b':'#3a3a41'), background:st.upWhitecard?'#c9a35b':'#17171b', display:'flex', alignItems:'center', justifyContent:'center', color:'#14110a', fontSize:'15px', fontWeight:800, flex:'none' },
+      upOptionRef:(el)=>{ this._upOption=el; }, upSlotLabel:'View 01',
+      upCustomRoleRef:(el)=>{ this._upCustomRole=el; },
     };
   }
 
@@ -2463,9 +2554,10 @@ class Component extends DCLogic {
     const aiUnclear=unclear.map(u=>{ const P=byN[u.n]; return { who:P?(P.author+' · '+(P.role||'')):('Note '+u.n), quote:P?P.text:'', why:u.why||'' }; });
     const aiSummary=actions.map(s=>{ const [bg,fg]=tagColor(s.tag); return { tag:s.tag, text:s.text, tagStyle:{ flex:'none', fontSize:'11px', fontWeight:800, padding:'3px 8px', borderRadius:'6px', background:bg, color:fg, height:'fit-content' } }; });
     const total=allPins.length;
+    const aiErr = real && st.rvAi && st.rvAi._error;
     return {
-      aiHeadline: running ? 'Claude is reviewing the comments…' : ('Claude reviewed all '+total+' comment'+(total===1?'':'s')),
-      aiSubline: running ? 'Cross-checking for contradictions and clarity — this takes a few seconds.' : ('Cross-checked for contradictions, clarity and grouped by type. Found '+conflicts.length+' conflict'+(conflicts.length===1?'':'s')+' and '+unclear.length+' unclear note'+(unclear.length===1?'':'s')+'.'),
+      aiHeadline: aiErr ? 'AI review couldn’t run' : (running ? 'Claude is reviewing the comments…' : ('Claude reviewed all '+total+' comment'+(total===1?'':'s'))),
+      aiSubline: aiErr ? (st.rvAi._error+' — your comments are safe; try again shortly.') : (running ? 'Cross-checking for contradictions and clarity — this takes a few seconds.' : ('Cross-checked for contradictions, clarity and grouped by type. Found '+conflicts.length+' conflict'+(conflicts.length===1?'':'s')+' and '+unclear.length+' unclear note'+(unclear.length===1?'':'s')+'.')),
       aiHasConflicts: conflicts.length>0, aiConflicts,
       aiHasUnclear: unclear.length>0, aiUnclear,
       aiSummary, hasConflict: conflicts.length>0,
@@ -2485,9 +2577,9 @@ class Component extends DCLogic {
     this.setState({ tab:'ai', composer:null });
     if(this.isReal() && this.state.rvAsset && !this.state.rvAi){
       window.Censio.aiReview(this.state.rvAsset.id).then(r=>{
-        this.setState({ rvAi: (r && !r.error) ? r : {conflicts:[],unclear:[],actions:[]} });
-        if(r && r.error) this._toast('AI review unavailable right now.');
-      }).catch(()=>{ this.setState({ rvAi:{conflicts:[],unclear:[],actions:[]} }); this._toast('AI review failed.'); });
+        if(r && r.error){ this.setState({ rvAi:{ conflicts:[],unclear:[],actions:[], _error:r.error } }); }
+        else { this.setState({ rvAi: r || {conflicts:[],unclear:[],actions:[]} }); }
+      }).catch(()=>{ this.setState({ rvAi:{conflicts:[],unclear:[],actions:[], _error:'AI review failed to run.'} }); });
     }
   }
 
