@@ -115,6 +115,13 @@ export async function currentAssets(projectId) {
     .order("view_no");
   return data || [];
 }
+// Superseded (older) revisions, newest first — for the "earlier versions" list.
+export async function archivedAssets(projectId) {
+  const { data } = await db.from("assets")
+    .select("*").eq("project_id", projectId).eq("is_current", false)
+    .order("view_no").order("revision", { ascending: false });
+  return data || [];
+}
 export async function lockAngle(assetId, locked) {
   return db.from("assets").update({ angle_locked: !!locked }).eq("id", assetId);
 }

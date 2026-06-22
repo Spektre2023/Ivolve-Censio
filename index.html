@@ -320,6 +320,19 @@
                   <sc-if value="{{ v.active }}" hint-placeholder-val="{{ false }}"><span style="color: #e2241c; font-weight: 800; font-size: 16px;">●</span></sc-if>
                 </button>
               </sc-for>
+              <sc-if value="{{ hasArchived }}" hint-placeholder-val="{{ false }}">
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: #6e6e75; font-weight: 600; padding: 12px 10px 8px; border-top: 1px solid #26262b; margin-top: 6px;">EARLIER VERSIONS</div>
+                <sc-for list="{{ rvArchived }}" as="v" hint-placeholder-count="1">
+                  <button onClick="{{ v.onPick }}" style="{{ v.style }}">
+                    <div style="width: 40px; height: 30px; border-radius: 6px; background: {{ v.render }}; flex: none;"></div>
+                    <div style="flex: 1; min-width: 0;">
+                      <div style="font-size: 13px; font-weight: 700; color: #d2d2d7;">{{ v.label }}</div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #7a7a82;">superseded · {{ v.when }}</div>
+                    </div>
+                    <sc-if value="{{ v.active }}" hint-placeholder-val="{{ false }}"><span style="color: #e2241c; font-weight: 800; font-size: 16px;">●</span></sc-if>
+                  </button>
+                </sc-for>
+              </sc-if>
             </div>
           </sc-if>
         </div>
@@ -1113,6 +1126,7 @@ class Component extends DCLogic {
     rvAi: null,              // reviewer: AI review result
     rvLoading: false,
     rvSwitcherOpen: false,
+    rvArchived: [],
     upWhitecard: false,
     rvVotes: {},
     rvMyVotes: [],
@@ -1303,10 +1317,13 @@ class Component extends DCLogic {
     this.setState({ rvLoading:true, rvComments:null, rvAi:null, approved:false, tab:'comments', composer:null });
     try {
       const assets = this.state.dbAssetsByProject[projectId] || await window.Censio.currentAssets(projectId);
-      const asset = assetId ? (assets.find(a=>a.id===assetId)||assets[0]) : assets[0];
+      let asset = assetId ? assets.find(a=>a.id===assetId) : assets[0];
+      if(assetId && !asset) asset = await window.Censio.assetById(assetId); // archived/older version
+      asset = asset || assets[0];
       let prev = null;
       if(asset && asset.supersedes_id) prev = await window.Censio.assetById(asset.supersedes_id);
       this.setState({ rvAssets:assets, rvAsset:asset, rvPrev:prev, rvLoading:false, rvAi: (asset && asset.ai_review) ? asset.ai_review : null });
+      window.Censio.archivedAssets(projectId).then(arc=>{ this._rememberPaths(arc); this.setState({ rvArchived:arc||[] }); }).catch(()=>this.setState({ rvArchived:[] }));
       if(asset){
         this._rememberPaths(assets); if(prev) this._rememberPaths([prev]);
         this.signImg(asset.id); if(prev) this.signImg(prev.id); this.loadComments(asset.id);
@@ -1983,7 +2000,15 @@ class Component extends DCLogic {
 
     const file=files[0];
     const parsed=this.parseFilename(file.name);
-    const supersedesId=(st.dbAssetsByProject[proj.id]||[]).some(a=>a.id===st.supersedeId)?st.supersedeId:null;
+    const existing=(st.dbAssetsByProject[proj.id]||[]);
+    let supersedesId=existing.some(a=>a.id===st.supersedeId)?st.supersedeId:null;
+    // Auto-detect supersede by naming convention: same View number, non-whitecard,
+    // and this revision is same-or-newer → retire the old one so only one shows.
+    if(!supersedesId && !isWC && parsed.view){
+      const match=existing.find(a=> a.stage!=='whitecard' && String(a.view_no)===String(parsed.view)
+        && (parsed.revision==null || a.revision==null || parsed.revision>=a.revision));
+      if(match) supersedesId=match.id;
+    }
     const slot = parsed.view ? ('View'+parsed.view) : null;
     const optionLabel = isWC ? ((this._upOption && this._upOption.value.trim()) || parsed.option || 'A') : null;
     this.setState({busy:true}); this._toast('Uploading…');
@@ -2576,8 +2601,8 @@ class Component extends DCLogic {
       dlSelectAll: ()=>{ const m={}; assets.forEach(a=>m[a.id]=true); this.setState({dlChecked:m}); },
       dlSelectNone: ()=>{ const m={}; assets.forEach(a=>m[a.id]=false); this.setState({dlChecked:m}); },
       closeDownload: ()=>this.setState({dlProjectId:null}),
-      dlIndividual: ()=>this.downloadIndividually(countSel(), 'original'),
-      dlZip: ()=>this.downloadZip(countSel(), 'original', (proj?proj.name:'CGIs')),
+      dlIndividual: ()=>this.downloadIndividually(countSel(), 'pdf'),
+      dlZip: ()=>this.downloadZip(countSel(), 'pdf', (proj?proj.name:'CGIs')),
     };
   }
   dlVals(){
@@ -2671,17 +2696,25 @@ class Component extends DCLogic {
     const st=this.state;
     const real=this.isReal();
     const list = real ? (st.rvAssets||[]) : [];
+    const vlabel=(a)=>{ const parsed=this.parseFilename(a.filename||''); const vn=a.view_no||parsed.view; const nm=parsed.viewName||(a.type&&a.type.toLowerCase()!=='view'?a.type:''); return vn?('View '+vn+(nm?(' — '+nm):'')):(nm||'View'); };
     const rvViews = list.map(a=>{ const active = st.rvAsset && a.id===st.rvAsset.id; return {
-      id:a.id, label:(a.type||'View')+(a.view_no?(' · View '+a.view_no):''), rev:'R'+(a.revision!=null?a.revision:'?'),
+      id:a.id, label:vlabel(a), rev:(a.stage==='whitecard'?('Whitecard '+(a.option_label||'')):('R'+(a.revision!=null?a.revision:'?'))),
       render:this.imgBg(a.id, this.renderA()), active,
       onPick:()=>{ this.setState({rvSwitcherOpen:false}); if(!active) this.openReviewer(st.dbProjectId, a.id); },
       style:{ display:'flex', alignItems:'center', gap:'10px', width:'100%', textAlign:'left', background: active?'#241413':'transparent', border:'1px solid '+(active?'#3a2420':'transparent'), padding:'9px 10px', borderRadius:'9px', cursor:'pointer', marginBottom:'2px' } }; });
+    const archived = real ? (st.rvArchived||[]) : [];
+    const rvArchived = archived.map(a=>{ const active = st.rvAsset && a.id===st.rvAsset.id; return {
+      id:a.id, label:vlabel(a)+' · R'+(a.revision!=null?a.revision:'?'), when:this.relTime(a.created_at),
+      render:this.imgBg(a.id, this.renderB()), active,
+      onPick:()=>{ this.setState({rvSwitcherOpen:false}); if(!active) this.openReviewer(st.dbProjectId, a.id); },
+      style:{ display:'flex', alignItems:'center', gap:'10px', width:'100%', textAlign:'left', background: active?'#241413':'transparent', border:'1px solid '+(active?'#3a2420':'transparent'), padding:'8px 10px', borderRadius:'9px', cursor:'pointer', marginBottom:'2px', opacity:0.85 } }; });
     return {
-      hasMultipleViews: list.length>1,
+      hasMultipleViews: list.length>1 || archived.length>0,
       viewCount: list.length,
       switcherOpen: st.rvSwitcherOpen,
       toggleSwitcher: ()=>this.setState(s=>({ rvSwitcherOpen:!s.rvSwitcherOpen })),
       rvViews,
+      rvArchived, hasArchived: archived.length>0,
     };
   }
 
