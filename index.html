@@ -356,6 +356,9 @@
           </div>
           <button onClick="{{ submitReview }}" style="height: 44px; padding: 0 18px; border-radius: 10px; border: 1.5px solid #2e2e34; background: #1b1b1f; font-size: 15px; font-weight: 700; color: #d2d2d7; cursor: pointer;" style-hover="border-color: #e2241c;">Submit review</button>
           <button onClick="{{ approve }}" style="{{ approveBtnStyle }}">{{ icCheck }} {{ approveLabel }}</button>
+          <sc-if value="{{ canDeleteUpload }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ deleteUpload }}" title="Delete this upload" style="height: 44px; padding: 0 14px; border-radius: 10px; border: 1.5px solid #5a2420; background: #1d1414; color: #ef6b62; font-size: 15px; font-weight: 700; cursor: pointer;" style-hover="background: #2a1715;">Delete</button>
+          </sc-if>
         </div>
       </div>
 
@@ -1070,7 +1073,7 @@
 </sc-if></x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
 class Component extends DCLogic {
-  APP_VERSION = 'V1.18';
+  APP_VERSION = 'V1.19';
   state = {
     screen: 'login',
     firstTime: false,
@@ -1321,7 +1324,10 @@ class Component extends DCLogic {
       if(assetId && !asset) asset = await window.Censio.assetById(assetId); // archived/older version
       asset = asset || assets[0];
       let prev = null;
-      if(asset && asset.supersedes_id) prev = await window.Censio.assetById(asset.supersedes_id);
+      if(asset && asset.supersedes_id){
+        const cand = await window.Censio.assetById(asset.supersedes_id);
+        if(cand && this._baseName(cand.filename)===this._baseName(asset.filename)) prev = cand;
+      }
       this.setState({ rvAssets:assets, rvAsset:asset, rvPrev:prev, rvLoading:false, rvAi: (asset && asset.ai_review) ? asset.ai_review : null });
       window.Censio.archivedAssets(projectId).then(arc=>{ this._rememberPaths(arc); this.setState({ rvArchived:arc||[] }); }).catch(()=>this.setState({ rvArchived:[] }));
       if(asset){
@@ -1700,6 +1706,8 @@ class Component extends DCLogic {
       downloadOriginal: ()=>{ this.setState({downloadOpen:false}); this.doDownload('original'); },
       downloadMarkup: ()=>{ this.setState({downloadOpen:false}); this.doDownload('markup'); },
       toggleSwipe: ()=>this.setState(s=>({swipe:!s.swipe})),
+      canDeleteUpload: real && st.isTeam && !!st.rvAsset,
+      deleteUpload: ()=>this.deleteUpload(),
       swipeBtnStyle: { display:'flex', alignItems:'center', gap:'8px', height:'44px', padding:'0 16px', borderRadius:'10px', border:'1.5px solid '+(st.swipe?'#e2241c':'#2e2e34'), background: st.swipe?'#241413':'#17171b', fontSize:'15px', fontWeight:700, color: st.swipe?'#e2241c':'#d2d2d7', cursor:'pointer' },
       submitReview: ()=>this.submitReview(),
       approve: ()=>this.toggleApprove(),
@@ -2004,8 +2012,9 @@ class Component extends DCLogic {
     let supersedesId=existing.some(a=>a.id===st.supersedeId)?st.supersedeId:null;
     // Auto-detect supersede by naming convention: same View number, non-whitecard,
     // and this revision is same-or-newer → retire the old one so only one shows.
-    if(!supersedesId && !isWC && parsed.view){
-      const match=existing.find(a=> a.stage!=='whitecard' && String(a.view_no)===String(parsed.view)
+    if(!supersedesId && !isWC){
+      const base=this._baseName(file.name);
+      const match=existing.find(a=> a.stage!=='whitecard' && this._baseName(a.filename)===base
         && (parsed.revision==null || a.revision==null || parsed.revision>=a.revision));
       if(match) supersedesId=match.id;
     }
@@ -2690,6 +2699,10 @@ class Component extends DCLogic {
     }));
   }
 
+  _baseName(filename){
+    // filename minus extension and the revision token (R1 / _R2A / r3 …), lowercased.
+    return String(filename||'').replace(/\.[^.]+$/,'').replace(/[_\- ]?r\d+[a-z]?\b/ig,'').replace(/[_\-\s]+/g,'').toLowerCase();
+  }
   relTime(iso){ if(!iso) return ''; const d=new Date(iso); const diff=(Date.now()-d.getTime())/1000; if(diff<60) return 'just now'; if(diff<3600){ const m=Math.floor(diff/60); return m+' min ago'; } if(diff<86400){ const h=Math.floor(diff/3600); return h+' hr ago'; } if(diff<604800){ const dd=Math.floor(diff/86400); return dd+' day'+(dd===1?'':'s')+' ago'; } return d.toLocaleDateString(); }
 
   viewSwitcherVals(){
@@ -2790,6 +2803,16 @@ class Component extends DCLogic {
         else { this.setState({ rvAi: r || {conflicts:[],unclear:[],actions:[]} }); }
       }).catch(()=>{ this.setState({ rvAi:{conflicts:[],unclear:[],actions:[], _error:'AI review failed to run.'} }); });
     }
+  }
+
+  deleteUpload(){
+    const a=this.state.rvAsset; if(!a){ return; }
+    if(!window.confirm('Delete this upload ('+(a.filename||'this image')+')? It will be removed for everyone. Comments on it are removed; any earlier version it replaced is restored. This cannot be undone.')) return;
+    this._toast('Deleting upload…');
+    window.Censio.deleteAsset(a.id).then(r=>{
+      if(r && r.ok){ this._toast('Upload deleted.'); const pid=this.state.dbProjectId; this.loadProjects(); this.openReviewer(pid); }
+      else { this._toast('Could not delete: '+((r&&r.error)||'error')); }
+    }).catch(()=>this._toast('Delete failed — is the Worker deployed?'));
   }
 
   doDownload(mode){

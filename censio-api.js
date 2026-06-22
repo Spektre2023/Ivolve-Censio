@@ -271,6 +271,7 @@ export const createUsers   = (users)   => callWorker("/api/admin/create-users", 
 // Admin sets/overrides a user's password (and shows it in the panel).
 export const setUserPassword = (payload) => callWorker("/api/admin/set-password", { method: "POST", body: JSON.stringify(payload) });
 export const updateUserAccount = (payload) => callWorker("/api/admin/update-user", { method: "POST", body: JSON.stringify(payload) });
+export const deleteAsset = (assetId) => callWorker("/api/asset/delete", { method: "POST", body: JSON.stringify({ assetId }) });
 export const deleteUser = (userId) => callWorker("/api/admin/delete-user", { method: "POST", body: JSON.stringify({ userId }) });
 // The signed-in user changes their own password; we also store it readable for admin.
 export async function changeMyPassword(newPassword) {
