@@ -85,6 +85,12 @@ export async function projectMembers(projectId) {
     .eq("project_id", projectId);
   return data || [];
 }
+export async function addMember(projectId, profileId, isApprover) {
+  return db.from("project_members").upsert({ project_id: projectId, profile_id: profileId, is_approver: !!isApprover });
+}
+export async function removeMember(projectId, profileId) {
+  return db.from("project_members").delete().eq("project_id", projectId).eq("profile_id", profileId);
+}
 
 // ---------- PEOPLE / COMPANIES (admin) ----------
 export async function allProfiles() {

@@ -606,7 +606,7 @@
                 </div>
               </sc-if>
               <sc-if value="{{ upNotUploaded }}" hint-placeholder-val="{{ true }}">
-                <div onClick="{{ upDrop }}" style="background: #1b1b1f; border: 2.5px dashed #3a3a41; border-radius: 18px; height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; text-align: center; padding: 40px;" style-hover="border-color: #e2241c; background: #1a1411;">
+                <div onClick="{{ upDrop }}" onDragOver="{{ upDragOver }}" onDragLeave="{{ upDragLeave }}" onDrop="{{ upOnDrop }}" style="{{ upDropZoneStyle }}">
                   <div style="width: 84px; height: 84px; border-radius: 22px; background: #241413; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #e2241c; margin-bottom: 22px;">↑</div>
                   <div style="font-size: 23px; font-weight: 800; margin-bottom: 8px;">Drag &amp; drop your {{ upKind }} here</div>
                   <div style="font-size: 17px; color: #a6a6ac; font-weight: 500; max-width: 460px; line-height: 1.5;">We'll convert it to an efficient, zoom-ready web format automatically and read the revision from the filename.</div>
@@ -697,12 +697,12 @@
               <div>Project</div><div>Code</div><div>Status</div><div>Reviewers</div><div>Updated</div>
             </div>
             <sc-for list="{{ activeProjects }}" as="p" hint-placeholder-count="3">
-              <div style="display: grid; grid-template-columns: 2.2fr 1fr 1fr 1fr 1fr; padding: 18px 22px; border-top: 1px solid #26262b; align-items: center;">
+              <div onClick="{{ p.onManage }}" style="{{ p.rowStyle }}" style-hover="background: #1f1f24;">
                 <div style="font-size: 17px; font-weight: 800;">{{ p.name }}</div>
                 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #a6a6ac; font-weight: 500;">{{ p.code }}</div>
                 <div><span style="{{ p.statusStyle }}">{{ p.status }}</span></div>
                 <div style="font-size: 16px; font-weight: 700; color: #d2d2d7;">{{ p.reviewers }}</div>
-                <div style="font-size: 15px; color: #7a7a82; font-weight: 600;">{{ p.updated }}</div>
+                <div style="font-size: 14px; color: #e2241c; font-weight: 700;">Manage access ›</div>
               </div>
             </sc-for>
             <sc-if value="{{ noActive }}" hint-placeholder-val="{{ false }}"><div style="padding: 20px 22px; font-size: 15px; color: #7a7a82; font-weight: 600;">No active projects match “{{ adminSearchVal }}”.</div></sc-if>
@@ -714,12 +714,12 @@
               <div>Project</div><div>Code</div><div>Status</div><div>Reviewers</div><div>Updated</div>
             </div>
             <sc-for list="{{ inactiveProjects }}" as="p" hint-placeholder-count="2">
-              <div style="display: grid; grid-template-columns: 2.2fr 1fr 1fr 1fr 1fr; padding: 18px 22px; border-top: 1px solid #26262b; align-items: center; opacity: 0.86;">
+              <div onClick="{{ p.onManage }}" style="{{ p.rowStyleDim }}" style-hover="background: #1f1f24;">
                 <div style="font-size: 17px; font-weight: 800;">{{ p.name }}</div>
                 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #a6a6ac; font-weight: 500;">{{ p.code }}</div>
                 <div><span style="{{ p.statusStyle }}">{{ p.status }}</span></div>
                 <div style="font-size: 16px; font-weight: 700; color: #d2d2d7;">{{ p.reviewers }}</div>
-                <div style="font-size: 15px; color: #7a7a82; font-weight: 600;">{{ p.updated }}</div>
+                <div style="font-size: 14px; color: #e2241c; font-weight: 700;">Manage access ›</div>
               </div>
             </sc-for>
             <sc-if value="{{ noInactive }}" hint-placeholder-val="{{ false }}"><div style="padding: 20px 22px; font-size: 15px; color: #7a7a82; font-weight: 600;">No inactive projects match “{{ adminSearchVal }}”.</div></sc-if>
@@ -774,6 +774,41 @@
           </div>
         </div>
       </div>
+
+      <!-- project access (members) manager -->
+      <sc-if value="{{ membersOpen }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closeMembers }}" style="position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.62); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; padding: 24px;">
+          <div onClick="{{ stopProp }}" style="width: 560px; max-width: 100%; max-height: 84vh; background: #161619; border: 1px solid #2e2e34; border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden;">
+            <div style="padding: 22px 24px 16px;">
+              <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+                <div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #7a7a82; font-weight: 600; margin-bottom: 8px;">PROJECT ACCESS</div>
+                  <div style="font-size: 22px; font-weight: 800;">{{ membersProjectName }}</div>
+                  <div style="font-size: 14px; color: #a6a6ac; font-weight: 600; margin-top: 6px;">Tick the people who can review this project. Changes save instantly.</div>
+                </div>
+                <button onClick="{{ closeMembers }}" style="background: #1f1f24; border: none; width: 36px; height: 36px; border-radius: 50%; color: #a6a6ac; font-size: 17px; cursor: pointer;">✕</button>
+              </div>
+            </div>
+            <div data-scroll style="flex: 1; overflow-y: auto; padding: 4px 16px 12px; border-top: 1px solid #26262b;">
+              <sc-for list="{{ membersPeople }}" as="m" hint-placeholder-count="4">
+                <div onClick="{{ m.onToggle }}" style="{{ m.rowStyle }}">
+                  <div style="{{ m.boxStyle }}"><sc-if value="{{ m.checked }}" hint-placeholder-val="{{ false }}">✓</sc-if></div>
+                  <div style="width: 34px; height: 34px; border-radius: 50%; background: {{ m.avatar }}; color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex: none;">{{ m.initials }}</div>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 15px; font-weight: 800;">{{ m.name }}</div>
+                    <div style="font-size: 13px; color: #7a7a82; font-weight: 600;">{{ m.role }}</div>
+                  </div>
+                </div>
+              </sc-for>
+              <sc-if value="{{ membersEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding: 22px; font-size: 14px; color: #7a7a82; font-weight: 600; text-align: center;">No people yet — invite team members or consultants first.</div></sc-if>
+            </div>
+            <div style="padding: 16px 24px; border-top: 1px solid #26262b; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 14px; color: #7a7a82; font-weight: 600;">{{ membersCount }} with access</span>
+              <button onClick="{{ closeMembers }}" style="height: 46px; padding: 0 22px; border-radius: 11px; border: none; background: #e2241c; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;">Done</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
     </div>
   </sc-if>
 
@@ -839,6 +874,10 @@ class Component extends DCLogic {
     dbProjectId: null,       // project context for reviewer/download
     joinedIds: [],           // team: project ids I've joined
     loginError: '',
+    upDragging: false,
+    membersProjectId: null,
+    membersProjectName: '',
+    membersIds: null,
     busy: false,
   };
 
@@ -866,6 +905,16 @@ class Component extends DCLogic {
     // NOTE: we intentionally do NOT restore a screen from localStorage — that
     // could show an app screen before the session is verified. The session
     // check below is the single source of truth for where a user lands.
+    try {
+      const h = window.location.hash || '';
+      if(/error_code=otp_expired|error=access_denied/.test(h)){
+        this._inviteFlow = true;
+        this.setState({ firstTime:true, screen:'login', loginError:'That invite link has expired. Ask an admin to re-send your invite, then open the new link straight away.' });
+      } else if(/type=(invite|recovery|signup)/.test(h) || /access_token=/.test(h)){
+        this._inviteFlow = true;
+        this.setState({ firstTime:true, screen:'login' });
+      }
+    } catch(e){}
     this.checkSession();
   }
 
@@ -873,6 +922,9 @@ class Component extends DCLogic {
   isReal(){ return !!(window.Censio && this.state.profile); }
 
   checkSession(){
+    // Invite/recovery landing: let the user set their password first instead of
+    // auto-routing them into the app on the temporary invite session.
+    if(this._inviteFlow) return;
     if(window.Censio){ window.Censio.currentProfile().then(p=>{ if(p) this.applyProfile(p); }).catch(()=>{}); }
     else { window.addEventListener('censio-ready', ()=>this.checkSession(), { once:true }); }
   }
@@ -1154,7 +1206,7 @@ class Component extends DCLogic {
       // screens
       isLogin: screen==='login', isProjects: screen==='projects', isReviewer: screen==='reviewer',
       isUpload: screen==='upload', isAdmin: screen==='admin', isTeamLogin: screen==='teamlogin',
-      ...this.uploadVals(), ...this.adminVals(), ...this.dlVals(), ...this.icons(),
+      ...this.uploadVals(), ...this.adminVals(), ...this.dlVals(), ...this.membersModalVals(), ...this.icons(),
 
       // rail identity
       railRole: real ? (st.profile.role || (st.profile.is_admin?'Administrator':(st.profile.is_team?'Ivolve Team':'Reviewer'))) : (st.isTeam ? (st.teamRole==='admin' ? 'Administrator' : 'Ivolve Team') : 'Architect'),
@@ -1184,7 +1236,13 @@ class Component extends DCLogic {
             const confirm = this._loginPwConfirm ? this._loginPwConfirm.value : '';
             if(confirm && pw!==confirm){ this.setState({ loginError:'The two passwords don’t match.' }); return; }
             const { error } = await window.Censio.setFirstPassword(pw);
-            if(error){ this.setState({ loginError:'Could not set password: '+error.message }); return; }
+            if(error){
+              const friendly = /session|missing|jwt/i.test(error.message)
+                ? 'Your invite link wasn’t opened correctly or has expired. Open the latest invite email link again (it signs you in), then set your password here.'
+                : ('Could not set password: '+error.message);
+              this.setState({ loginError: friendly }); return;
+            }
+            this._inviteFlow = false;
             this._toast('Password set ✓');
             const p1 = await window.Censio.currentProfile(); this.applyProfile(p1); return;
           }
@@ -1451,11 +1509,27 @@ class Component extends DCLogic {
     return { view, revision: rev!=null?parseInt(rev,10):null, type, media, ext };
   }
   onUpFile(e){
-    const f=e.target && e.target.files && e.target.files[0]; if(!f) return;
+    const f=e.target && e.target.files && e.target.files[0];
+    this._acceptUpFile(f);
+  }
+  _acceptUpFile(f){
+    if(!f) return;
     this._upFile=f;
     try { this._upUrl = "center/cover no-repeat url('"+URL.createObjectURL(f)+"')"; } catch(err){ this._upUrl=null; }
     const parsed=this.parseFilename(f.name);
-    this.setState({ uploaded:true, uploadAsVideo: parsed.media==='video' });
+    this.setState({ uploaded:true, uploadAsVideo: parsed.media==='video', upDragging:false });
+  }
+  upDragOver(e){ e.preventDefault(); try{ e.dataTransfer.dropEffect='copy'; }catch(err){} if(!this.state.upDragging) this.setState({ upDragging:true }); }
+  upDragLeave(e){ e.preventDefault(); if(this.state.upDragging) this.setState({ upDragging:false }); }
+  upOnDrop(e){
+    e.preventDefault();
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if(this.isReal()){ this._acceptUpFile(f); }
+    else { this.setState({ uploaded:true, upDragging:false }); }
+  }
+  upDropZoneStyle(){
+    const drag=this.state.upDragging;
+    return { background: drag?'#1a1411':'#1b1b1f', border:'2.5px dashed '+(drag?'#e2241c':'#3a3a41'), borderRadius:'18px', height:'420px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', cursor:'pointer', textAlign:'center', padding:'40px', transition:'border-color .15s, background .15s' };
   }
   doUpload(){
     const st=this.state; const file=this._upFile;
@@ -1515,6 +1589,7 @@ class Component extends DCLogic {
       upDrop: ()=>{ if(this._upInput) this._upInput.click(); },
       upReset: ()=>{ this._upFile=null; if(this._upInput) this._upInput.value=''; this.setState({uploaded:false}); },
       upFileRef:(el)=>{ this._upInput=el; }, onUpFile:(e)=>this.onUpFile(e), upNotesRef:(el)=>{ this._upNotes=el; },
+      upDragOver:(e)=>this.upDragOver(e), upDragLeave:(e)=>this.upDragLeave(e), upOnDrop:(e)=>this.upOnDrop(e), upDropZoneStyle: this.upDropZoneStyle(),
       upRender: file? (this._upUrl||this.renderA()) : (isVideo?this.renderB():this.renderA()),
       upIsVideo: isVideo,
       upSetImage: ()=>this.setState({uploadAsVideo:false}),
@@ -1560,6 +1635,7 @@ class Component extends DCLogic {
       upDrop: ()=>this.setState({uploaded:true}),
       upReset: ()=>this.setState({uploaded:false}),
       upFileRef:(el)=>{ this._upInput=el; }, onUpFile:(e)=>this.setState({uploaded:true}), upNotesRef:(el)=>{ this._upNotes=el; },
+      upDragOver:(e)=>this.upDragOver(e), upDragLeave:(e)=>this.upDragLeave(e), upOnDrop:(e)=>this.upOnDrop(e), upDropZoneStyle: this.upDropZoneStyle(),
       upRender: st.uploadAsVideo ? this.renderB() : this.renderA(),
       upIsVideo: st.uploadAsVideo,
       upSetImage: ()=>this.setState({uploadAsVideo:false, uploaded:false}),
@@ -1593,7 +1669,7 @@ class Component extends DCLogic {
       { name:'Marina Bay Towers', code:'MBT-02', status:'Archived', reviewers:2, updated:'2 wks ago' },
     ];
     const match=(p)=> !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q);
-    const mapP=(p)=>({ ...p, statusStyle:projStatusStyle(p.status) });
+    const mapP=(p)=>({ ...p, statusStyle:projStatusStyle(p.status), onManage:()=>this._toast('Member management runs on the live site.'), rowStyle:this._adminRowStyle(false), rowStyleDim:this._adminRowStyle(true) });
     const activeProjects=allProjects.filter(p=>p.status==='Active'&&match(p)).sort((a,b)=>a.name.localeCompare(b.name)).map(mapP);
     const inactiveProjects=allProjects.filter(p=>p.status!=='Active'&&match(p)).sort((a,b)=>a.name.localeCompare(b.name)).map(mapP);
 
@@ -1651,9 +1727,11 @@ class Component extends DCLogic {
     const q=(st.adminSearch||'').toLowerCase().trim();
     const projStatusStyle=(s)=>({ fontSize:'13px', fontWeight:800, color: s==='Active'?'#33a96e':(s==='On hold'?'#c9a35b':'#7a7a82'), background: s==='Active'?'#16271f':(s==='On hold'?'#2a2417':'#1e1e22'), padding:'4px 10px', borderRadius:'6px' });
     const projects=(st.dbProjects||[]).map(p=>({
-      name:p.name, code:p.code||'', status:p.status||'Active',
+      id:p.id, name:p.name, code:p.code||'', status:p.status||'Active',
       reviewers: (p.project_members && p.project_members[0] && p.project_members[0].count) || 0,
       updated: this.relTime(p.updated_at), statusStyle: projStatusStyle(p.status||'Active'),
+      onManage: ()=>this.openMembers({ id:p.id, name:p.name }),
+      rowStyle: this._adminRowStyle(false), rowStyleDim: this._adminRowStyle(true),
     }));
     const match=(p)=> !q || p.name.toLowerCase().includes(q) || (p.code||'').toLowerCase().includes(q);
     const activeProjects=projects.filter(p=>p.status==='Active'&&match(p)).sort((a,b)=>a.name.localeCompare(b.name));
@@ -1725,6 +1803,38 @@ class Component extends DCLogic {
       if(r && r.ok){ this._toast((isTeam?'Team member':'Consultant')+' invited — '+email+' will get a secure sign-in link.'); this.loadPeople(); }
       else { this._toast('Could not invite: '+((r&&r.error)||'unknown error')); }
     }).catch(()=>this._toast('Invite failed — is the Worker deployed?'));
+  }
+
+  _adminRowStyle(dim){ return { display:'grid', gridTemplateColumns:'2.2fr 1fr 1fr 1fr 1fr', padding:'18px 22px', borderTop:'1px solid #26262b', alignItems:'center', cursor:'pointer', opacity: dim?0.86:1, transition:'background .12s' }; }
+
+  openMembers(p){
+    if(!this.isReal()){ this._toast('Member management runs on the live site (sign in to use it).'); return; }
+    this.setState({ membersProjectId:p.id, membersProjectName:p.name, membersIds:null });
+    window.Censio.projectMembers(p.id).then(rows=>{ this.setState({ membersIds: rows.map(r=>r.profile_id) }); }).catch(()=>this.setState({ membersIds:[] }));
+  }
+  toggleMember(profileId){
+    const pid=this.state.membersProjectId; if(!pid) return;
+    const has=(this.state.membersIds||[]).indexOf(profileId)!==-1;
+    if(has){ this.setState(s=>({ membersIds:(s.membersIds||[]).filter(x=>x!==profileId) })); window.Censio.removeMember(pid,profileId).catch(()=>this._toast('Could not remove access.')); }
+    else { this.setState(s=>({ membersIds:[...(s.membersIds||[]), profileId] })); window.Censio.addMember(pid,profileId).catch(()=>this._toast('Could not grant access.')); }
+  }
+  closeMembers(){ this.setState({ membersProjectId:null }); this.loadProjects(); }
+  membersModalVals(){
+    const st=this.state;
+    if(!st.membersProjectId) return { membersOpen:false };
+    const people=st.dbPeople||[];
+    const ids=st.membersIds||[];
+    const initialsOf=(n)=> (n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return {
+      membersOpen:true, membersProjectName: st.membersProjectName,
+      membersCount: ids.length, membersEmpty: people.length===0,
+      closeMembers: ()=>this.closeMembers(), stopProp:(e)=>e.stopPropagation(),
+      membersPeople: people.map(c=>{ const checked=ids.indexOf(c.id)!==-1; return {
+        id:c.id, name:c.full_name||c.email||'—', role: c.is_admin?'Administrator':(c.role||(c.is_team?'Ivolve Team':'Reviewer')), initials:initialsOf(c.full_name||c.email), avatar:this.roleColor(c.role||(c.is_team?'team':'')), checked,
+        onToggle:()=>this.toggleMember(c.id),
+        rowStyle:{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'10px', cursor:'pointer', background: checked?'#1b1b1f':'transparent', border:'1px solid '+(checked?'#2e2e34':'transparent') },
+        boxStyle:{ width:'22px', height:'22px', borderRadius:'6px', border:'2px solid '+(checked?'#e2241c':'#3a3a41'), background:checked?'#e2241c':'transparent', color:'#fff', fontSize:'13px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', flex:'none' } }; }),
+    };
   }
 
   projectAssets(id){
