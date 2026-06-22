@@ -155,7 +155,7 @@ export async function optimizeAsset(assetId) {
 // ---------- COMMENTS / MARKUPS ----------
 export async function getComments(assetId) {
   const { data } = await db.from("comments")
-    .select("*, profiles:author_id(full_name, role)")
+    .select("*, profiles:author_id(full_name, role), vetoer:vetoed_by(full_name)")
     .eq("asset_id", assetId).order("n");
   return data || [];
 }
@@ -172,6 +172,19 @@ export async function updateComment(id, patch) {
 }
 export async function deleteComment(id) {
   return db.from("comments").delete().eq("id", id);
+}
+// Veto / un-veto a comment (Authoriser, Client, or Admin — enforced by RLS).
+export async function vetoComment(id, vetoed) {
+  const { data: { user } } = await db.auth.getUser();
+  return db.from("comments").update({
+    vetoed: !!vetoed,
+    vetoed_by: vetoed ? user.id : null,
+    vetoed_at: vetoed ? new Date().toISOString() : null,
+  }).eq("id", id);
+}
+// Designate (or clear) a project's authoriser. Admin only (RLS).
+export async function setAuthoriser(projectId, profileId) {
+  return db.from("projects").update({ authoriser_id: profileId || null }).eq("id", projectId);
 }
 
 // ---------- APPROVALS ----------
@@ -216,6 +229,8 @@ export const DEFAULT_PASSWORD = "Censio2026!";
 export const createUsers   = (users)   => callWorker("/api/admin/create-users", { method: "POST", body: JSON.stringify({ users }) });
 // Admin sets/overrides a user's password (and shows it in the panel).
 export const setUserPassword = (payload) => callWorker("/api/admin/set-password", { method: "POST", body: JSON.stringify(payload) });
+export const updateUserAccount = (payload) => callWorker("/api/admin/update-user", { method: "POST", body: JSON.stringify(payload) });
+export const deleteUser = (userId) => callWorker("/api/admin/delete-user", { method: "POST", body: JSON.stringify({ userId }) });
 // The signed-in user changes their own password; we also store it readable for admin.
 export async function changeMyPassword(newPassword) {
   const up = await db.auth.updateUser({ password: newPassword });

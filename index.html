@@ -792,6 +792,7 @@
                         </div>
                         <div><span style="{{ c.statusStyle }}">{{ c.status }}</span></div>
                         <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                          <button onClick="{{ c.onEditUser }}" style="height: 36px; padding: 0 13px; border-radius: 9px; border: 1.5px solid #2e2e34; background: #1b1b1f; color: #d2d2d7; font-size: 13px; font-weight: 700; cursor: pointer;" style-hover="border-color: #e2241c;">Edit</button>
                           <button onClick="{{ c.onManageProjects }}" style="height: 36px; padding: 0 13px; border-radius: 9px; border: 1.5px solid #2e2e34; background: #1b1b1f; color: #d2d2d7; font-size: 13px; font-weight: 700; cursor: pointer;" style-hover="border-color: #e2241c;">Assign projects</button>
                           <button onClick="{{ c.onReset }}" style="height: 36px; padding: 0 13px; border-radius: 9px; border: 1.5px solid #2e2e34; background: #1b1b1f; color: #d2d2d7; font-size: 13px; font-weight: 700; cursor: pointer;" style-hover="border-color: #e2241c;">Set password</button>
                         </div>
@@ -942,6 +943,53 @@
       </div>
     </div>
   </div>
+</sc-if>
+<sc-if value="{{ euOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeEditUser }}" style="position: fixed; inset: 0; z-index: 75; background: rgba(0,0,0,0.62); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; padding: 24px;">
+    <div onClick="{{ stopProp }}" style="width: 520px; max-width: 100%; max-height: 90vh; background: #161619; border: 1px solid #2e2e34; border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden;">
+      <div style="padding: 22px 24px 14px; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid #26262b;">
+        <div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #7a7a82; font-weight: 600; margin-bottom: 8px;">EDIT USER</div>
+          <div style="font-size: 21px; font-weight: 800;">{{ euTitle }}</div>
+        </div>
+        <button onClick="{{ closeEditUser }}" style="background: #1f1f24; border: none; width: 36px; height: 36px; border-radius: 50%; color: #a6a6ac; font-size: 17px; cursor: pointer;">✕</button>
+      </div>
+      <div data-scroll style="flex: 1; overflow-y: auto; padding: 18px 24px; display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; background: #1a1a1e; padding: 5px; border-radius: 12px; width: 300px;">
+          <button onClick="{{ euSetClient }}" style="{{ euClientStyle }}">Client / consultant</button>
+          <button onClick="{{ euSetTeam }}" style="{{ euTeamStyle }}">Ivolve team</button>
+        </div>
+        <div>
+          <div style="font-size: 13px; font-weight: 700; color: #d2d2d7; margin-bottom: 6px;">Full name</div>
+          <input ref="{{ euNameRef }}" defaultValue="{{ euName }}" style="width: 100%; height: 46px; border: 1.5px solid #2e2e34; border-radius: 10px; padding: 0 14px; font-size: 15px; font-weight: 500; background: #131316; color: #f4f4f2;" style-focus="border-color: #e2241c;" />
+        </div>
+        <div>
+          <div style="font-size: 13px; font-weight: 700; color: #d2d2d7; margin-bottom: 6px;">Email address</div>
+          <input ref="{{ euEmailRef }}" defaultValue="{{ euEmail }}" type="email" style="width: 100%; height: 46px; border: 1.5px solid #2e2e34; border-radius: 10px; padding: 0 14px; font-size: 15px; font-weight: 500; background: #131316; color: #f4f4f2;" style-focus="border-color: #e2241c;" />
+        </div>
+        <div>
+          <div style="font-size: 13px; font-weight: 700; color: #d2d2d7; margin-bottom: 6px;">Role</div>
+          <select ref="{{ euRoleRef }}" defaultValue="{{ euRole }}" style="width: 100%; height: 46px; border: 1.5px solid #2e2e34; border-radius: 10px; padding: 0 12px; font-size: 15px; font-weight: 500; background: #131316; color: #f4f4f2;">
+            <sc-for list="{{ euRoleOptions }}" as="o" hint-placeholder-count="6">
+              <option value="{{ o.value }}">{{ o.label }}</option>
+            </sc-for>
+          </select>
+        </div>
+        <sc-if value="{{ euShowCompany }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="font-size: 13px; font-weight: 700; color: #d2d2d7; margin-bottom: 6px;">Company</div>
+            <input ref="{{ euCompanyRef }}" defaultValue="{{ euCompany }}" style="width: 100%; height: 46px; border: 1.5px solid #2e2e34; border-radius: 10px; padding: 0 14px; font-size: 15px; font-weight: 500; background: #131316; color: #f4f4f2;" style-focus="border-color: #e2241c;" />
+          </div>
+        </sc-if>
+      </div>
+      <div style="padding: 16px 24px; border-top: 1px solid #26262b; display: flex; align-items: center; gap: 10px;">
+        <button onClick="{{ euDelete }}" style="height: 46px; padding: 0 16px; border-radius: 11px; border: 1.5px solid #5a2420; background: #1d1414; color: #ef6b62; font-size: 14px; font-weight: 700; cursor: pointer;">Delete user</button>
+        <div style="flex: 1;"></div>
+        <button onClick="{{ closeEditUser }}" style="height: 46px; padding: 0 18px; border-radius: 11px; border: 1.5px solid #2e2e34; background: #1b1b1f; color: #a6a6ac; font-size: 15px; font-weight: 700; cursor: pointer;">Cancel</button>
+        <button onClick="{{ saveEditUser }}" style="height: 46px; padding: 0 22px; border-radius: 11px; border: none; background: #e2241c; color: #fff; font-size: 15px; font-weight: 800; cursor: pointer;">Save changes</button>
+      </div>
+    </div>
+  </div>
 </sc-if></x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
 class Component extends DCLogic {
@@ -1016,6 +1064,9 @@ class Component extends DCLogic {
     upmUserName: '',
     upmIds: null,
     addRows: null,
+    euId: null,
+    euUser: null,
+    euIsTeam: false,
     busy: false,
   };
 
@@ -1396,7 +1447,7 @@ class Component extends DCLogic {
       // screens
       isLogin: screen==='login', isProjects: screen==='projects', isReviewer: screen==='reviewer',
       isUpload: screen==='upload', isAdmin: screen==='admin', isTeamLogin: screen==='teamlogin',
-      ...this.uploadVals(), ...this.adminVals(), ...this.dlVals(), ...this.membersModalVals(), ...this.addPeopleVals(), ...this.accountVals(), ...this.userProjectsVals(), ...this.icons(),
+      ...this.uploadVals(), ...this.adminVals(), ...this.dlVals(), ...this.membersModalVals(), ...this.addPeopleVals(), ...this.accountVals(), ...this.userProjectsVals(), ...this.editUserVals(), ...this.icons(),
 
       // rail identity
       railRole: real ? (st.profile.role || (st.profile.is_admin?'Administrator':(st.profile.is_team?'Ivolve Team':'Reviewer'))) : (st.isTeam ? (st.teamRole==='admin' ? 'Administrator' : 'Ivolve Team') : 'Architect'),
@@ -1939,6 +1990,7 @@ class Component extends DCLogic {
       statusStyle:conStatusStyle(c.must_change_password?'Invited':'Active'), pending:false,
       password: c.visible_password||'', hasPassword: !!c.visible_password,
       onManageProjects:(e)=>{ e.stopPropagation(); this.openUserProjects(c); },
+      onEditUser:(e)=>{ e.stopPropagation(); this.openEditUser(c); },
       onInvite:(e)=>{ e.stopPropagation(); this.adminSetPassword(c); },
       onReset:(e)=>{ e.stopPropagation(); this.adminSetPassword(c); } });
     const mkGroup=(key, name, badge, mem)=>{
@@ -2106,6 +2158,57 @@ class Component extends DCLogic {
     this.setState({ upmUserId:c.id, upmUserName:(c.full_name||c.email||c.name||'this person'), upmIds:null });
     if(!this.state.dbProjects) this.loadProjects();
     window.Censio.memberProjects(c.id).then(ids=>this.setState({ upmIds:ids })).catch(()=>this.setState({ upmIds:[] }));
+  }
+  // ---- edit / delete a user (admin) ----
+  openEditUser(c){
+    if(!this.isReal()){ this._toast('Editing runs on the live site.'); return; }
+    this.setState({ euId:c.id, euUser:c, euIsTeam: !!c.is_team });
+  }
+  saveEditUser(){
+    const id=this.state.euId; if(!id) return;
+    const full_name=this._euName?this._euName.value.trim():'';
+    const email=this._euEmail?this._euEmail.value.trim():'';
+    const role=this._euRole?this._euRole.value:'';
+    const isTeam=this.state.euIsTeam;
+    const company=isTeam?'Ivolve Studios':(this._euCompany?this._euCompany.value.trim():'');
+    if(!email){ this._toast('Email is required.'); return; }
+    this.setState({busy:true}); this._toast('Saving…');
+    window.Censio.updateUserAccount({ userId:id, full_name, email, role, company, is_team:isTeam }).then(r=>{
+      this.setState({busy:false});
+      if(r && r.ok){ this._toast('User updated.'); this.setState({euId:null}); this.loadPeople(); }
+      else { this._toast('Could not save: '+((r&&r.error)||'error')); }
+    }).catch(()=>{ this.setState({busy:false}); this._toast('Save failed — is the Worker deployed?'); });
+  }
+  deleteUser(c){
+    if(!this.isReal()){ this._toast('Deletion runs on the live site.'); return; }
+    if(c.id===(this.state.profile&&this.state.profile.id)){ this._toast('You can’t delete your own account.'); return; }
+    if(!window.confirm('Delete '+(c.full_name||c.email||'this user')+'? This removes their login and access. Their past comments stay on record.')) return;
+    this._toast('Deleting…');
+    window.Censio.deleteUser(c.id).then(r=>{
+      if(r && r.ok){ this._toast('User deleted.'); this.setState({euId:null}); this.loadPeople(); }
+      else { this._toast('Could not delete: '+((r&&r.error)||'error')); }
+    }).catch(()=>this._toast('Delete failed — is the Worker deployed?'));
+  }
+  editUserVals(){
+    const st=this.state;
+    if(!st.euId) return { euOpen:false };
+    const u=st.euUser||{};
+    let roles=['Client','Architect','Interior Designer','Landscape Designer','Lighting Designer','Project Manager','Urban Planner','Marketing','Real Estate Agent','Administrator','Artist','Project Lead','Other'];
+    if(u.role && roles.indexOf(u.role)===-1) roles=[u.role, ...roles];
+    return {
+      euOpen:true,
+      euTitle:'Edit '+(u.full_name||u.email||'user'),
+      euNameRef:(el)=>{this._euName=el;}, euEmailRef:(el)=>{this._euEmail=el;}, euCompanyRef:(el)=>{this._euCompany=el;}, euRoleRef:(el)=>{this._euRole=el;},
+      euName:u.full_name||'', euEmail:u.email||'', euCompany:(u.companies&&u.companies.name)||'', euRole:u.role||'',
+      euRoleOptions: roles.map(r=>({ value:r, label:r })),
+      euIsTeam: st.euIsTeam, euShowCompany: !st.euIsTeam,
+      euTeamStyle:this.segStyle(st.euIsTeam), euClientStyle:this.segStyle(!st.euIsTeam),
+      euSetTeam:()=>this.setState({euIsTeam:true}), euSetClient:()=>this.setState({euIsTeam:false}),
+      closeEditUser:()=>this.setState({euId:null}),
+      stopProp:(e)=>e.stopPropagation(),
+      saveEditUser:()=>this.saveEditUser(),
+      euDelete:()=>this.deleteUser(u),
+    };
   }
   toggleUserProject(projectId){
     const uid=this.state.upmUserId; if(!uid) return;
