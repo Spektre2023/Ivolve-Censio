@@ -1133,7 +1133,13 @@ class Component extends DCLogic {
         this.setState({ firstTime:true, screen:'login' });
       }
     } catch(e){}
+    try { const sp=new URLSearchParams(window.location.search||''); const aid=sp.get('asset'); if(aid){ this._deepAsset=aid; this._deepFocus=sp.get('focus')||''; } } catch(e){}
     this.checkSession();
+  }
+  openDeepLink(){
+    const aid=this._deepAsset; this._deepAsset=null;
+    if(!aid || !window.Censio) return;
+    window.Censio.assetById(aid).then(a=>{ if(a){ this.openReviewer(a.project_id, aid); if(this._deepFocus==='ai') setTimeout(()=>this.setState({tab:'ai'}), 500); } }).catch(()=>{});
   }
 
   // true once we have a real signed-in profile from Supabase
@@ -1160,6 +1166,7 @@ class Component extends DCLogic {
       this._toast('Signed in, but your profile isn’t set up yet. Ask an admin to finish your account.');
     }
     this.go(isTeam ? (isAdmin ? 'admin' : 'upload') : 'projects');
+    if(this._deepAsset) this.openDeepLink();
   }
 
   go(screen){
@@ -1255,7 +1262,7 @@ class Component extends DCLogic {
       const asset = assetId ? (assets.find(a=>a.id===assetId)||assets[0]) : assets[0];
       let prev = null;
       if(asset && asset.supersedes_id) prev = await window.Censio.assetById(asset.supersedes_id);
-      this.setState({ rvAssets:assets, rvAsset:asset, rvPrev:prev, rvLoading:false });
+      this.setState({ rvAssets:assets, rvAsset:asset, rvPrev:prev, rvLoading:false, rvAi: (asset && asset.ai_review) ? asset.ai_review : null });
       if(asset){
         this._rememberPaths(assets); if(prev) this._rememberPaths([prev]);
         this.signImg(asset.id); if(prev) this.signImg(prev.id); this.loadComments(asset.id);
@@ -2600,7 +2607,7 @@ class Component extends DCLogic {
   notifyConflict(A,B){
     if(this.isReal()){
       const roles=[A&&A.role, B&&B.role].filter(Boolean);
-      window.Censio.notify({ type:'conflict', projectId:this.state.dbProjectId, roles, extra:'Two reviewers left conflicting comments on this render. Please coordinate to resolve.' }).catch(()=>{});
+      window.Censio.notify({ type:'conflict', projectId:this.state.dbProjectId, assetId:(this.state.rvAsset&&this.state.rvAsset.id), roles, extra:'Two reviewers left conflicting comments on this render. Please coordinate to resolve.' }).catch(()=>{});
     }
     const names=[A&&A.author, B&&B.author].filter(Boolean).join(' and ');
     this._toast('Resolution request sent'+(names?(' to '+names):'')+'.');
