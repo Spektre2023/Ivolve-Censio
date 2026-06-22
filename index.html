@@ -297,6 +297,26 @@
           </div>
           <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7a7a82; margin-top: 3px;">{{ assetFilename }} · uploaded {{ assetUploaded }}</div>
         </div>
+        <sc-if value="{{ hasMultipleViews }}" hint-placeholder-val="{{ false }}">
+          <div style="position: relative;">
+            <button onClick="{{ toggleSwitcher }}" style="display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 14px; border-radius: 10px; border: 1.5px solid #2e2e34; background: #17171b; font-size: 14px; font-weight: 700; color: #d2d2d7; cursor: pointer;" style-hover="border-color: #e2241c;">⊞ Views · {{ viewCount }} ▾</button>
+            <sc-if value="{{ switcherOpen }}" hint-placeholder-val="{{ false }}">
+              <div data-scroll style="position: absolute; top: 50px; left: 0; z-index: 40; width: 308px; background: #1b1b1f; border: 1px solid #2e2e34; border-radius: 12px; box-shadow: 0 18px 50px rgba(0,0,0,0.55); padding: 8px; max-height: 400px; overflow-y: auto;">
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: #6e6e75; font-weight: 600; padding: 6px 10px 8px;">VIEWS IN THIS PROJECT</div>
+                <sc-for list="{{ rvViews }}" as="v" hint-placeholder-count="2">
+                  <button onClick="{{ v.onPick }}" style="{{ v.style }}">
+                    <div style="width: 46px; height: 34px; border-radius: 6px; background: {{ v.render }}; flex: none;"></div>
+                    <div style="flex: 1; min-width: 0;">
+                      <div style="font-size: 14px; font-weight: 800; color: #f4f4f2;">{{ v.label }}</div>
+                      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #7a7a82;">{{ v.rev }}</div>
+                    </div>
+                    <sc-if value="{{ v.active }}" hint-placeholder-val="{{ false }}"><span style="color: #e2241c; font-weight: 800; font-size: 16px;">●</span></sc-if>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
         <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
           <button onClick="{{ toggleSwipe }}" style="{{ swipeBtnStyle }}">{{ icCompare }} Compare to {{ prevRev }}</button>
           <div style="position: relative;">
@@ -429,21 +449,26 @@
                           <span style="font-size: 14px; font-weight: 800; color: #f4f4f2;">{{ c.author }}</span>
                           <span style="font-size: 12px; font-weight: 700; color: {{ c.roleColor }};">{{ c.role }}</span>
                         </div>
-                        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                        <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; align-items: center;">
                           <span style="{{ c.tagStyle }}">{{ c.tag }}</span>
                           <sc-if value="{{ c.flagged }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 800; color: #dc2626; background: #2e1515; padding: 3px 8px; border-radius: 6px;">⚠ Conflict</span></sc-if>
+                          <sc-if value="{{ c.vetoed }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 900; letter-spacing: 0.06em; color: #fff; background: #b3271f; padding: 3px 9px; border-radius: 6px;">IGNORE</span></sc-if>
                         </div>
-                        <p style="font-size: 15px; line-height: 1.5; color: #d2d2d7; margin: 0; font-weight: 500;">{{ c.text }}</p>
+                        <p style="{{ c.textStyle }}">{{ c.text }}</p>
+                        <sc-if value="{{ c.vetoed }}" hint-placeholder-val="{{ false }}">
+                          <div style="font-size: 12px; color: #8a8a90; font-weight: 600; margin-top: 6px;">Rejected by {{ c.vetoedBy }} — not to be actioned.</div>
+                        </sc-if>
                         <sc-if value="{{ c.attachment }}" hint-placeholder-val="{{ false }}">
                           <div style="display: flex; align-items: center; gap: 8px; margin-top: 9px; padding: 8px 11px; background: #222229; border-radius: 9px;">
                             <span style="font-size: 15px;">📎</span>
                             <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; color: #d2d2d7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ c.attachment }}</span>
                           </div>
                         </sc-if>
-                        <div style="display: flex; align-items: center; gap: 14px; margin-top: 9px;">
+                        <div style="display: flex; align-items: center; gap: 14px; margin-top: 9px; flex-wrap: wrap;">
                           <sc-if value="{{ c.hasShape }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 700; color: #c9a35b;">✎ Area marked</span></sc-if>
                           <sc-if value="{{ c.canEdit }}" hint-placeholder-val="{{ false }}"><button onClick="{{ c.onEdit }}" style="background: none; border: none; padding: 0; font-size: 13px; font-weight: 700; color: #e2241c; cursor: pointer;">✎ Edit</button></sc-if>
                           <button onClick="{{ c.onToggleVis }}" style="background: none; border: none; padding: 0; font-size: 13px; font-weight: 700; color: #7a7a82; cursor: pointer;">{{ c.visLabel }}</button>
+                          <sc-if value="{{ c.canVeto }}" hint-placeholder-val="{{ false }}"><button onClick="{{ c.onVeto }}" style="background: none; border: none; padding: 0; font-size: 13px; font-weight: 800; color: #b3271f; cursor: pointer; margin-left: auto;">{{ c.vetoLabel }}</button></sc-if>
                         </div>
                       </div>
                     </div>
@@ -803,6 +828,7 @@
                     <div style="font-size: 15px; font-weight: 800;">{{ m.name }}</div>
                     <div style="font-size: 13px; color: #7a7a82; font-weight: 600;">{{ m.role }}</div>
                   </div>
+                  <button onClick="{{ m.onMakeAuthoriser }}" style="{{ m.authStyle }}">{{ m.authLabel }}</button>
                 </div>
               </sc-for>
               <sc-if value="{{ membersEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding: 22px; font-size: 14px; color: #7a7a82; font-weight: 600; text-align: center;">No people yet — invite team members or consultants first.</div></sc-if>
@@ -973,6 +999,7 @@ class Component extends DCLogic {
     rvComments: null,        // reviewer: comments[] for current asset
     rvAi: null,              // reviewer: AI review result
     rvLoading: false,
+    rvSwitcherOpen: false,
     dbPeople: null,          // admin: profiles[]
     dbProjectId: null,       // project context for reviewer/download
     joinedIds: [],           // team: project ids I've joined
@@ -1168,6 +1195,7 @@ class Component extends DCLogic {
         role: (c.profiles&&c.profiles.role)||'', roleColor: this.roleColor((c.profiles&&c.profiles.role)||''),
         tag: c.tag||'Other', x:Number(c.x), y:Number(c.y), shape:c.shape||null,
         attachment: c.attachment_path||null, text:c.body, resolved:!!c.resolved,
+        vetoed: !!c.vetoed, vetoedBy: (c.vetoer&&c.vetoer.full_name)||'',
       }));
       const maxN = pins.reduce((m,p)=>Math.max(m, p.n||0), 0);
       this.setState({ rvComments: pins, nextN: maxN+1 });
@@ -1183,6 +1211,22 @@ class Component extends DCLogic {
     if(r.includes('lighting')) return '#d6a94e';
     if(r.includes('team')||r.includes('admin')) return '#2f9bb5';
     return '#9a9aa2';
+  }
+
+  canVetoNow(){
+    if(!this.isReal()) return false;
+    const p=this.state.profile||{};
+    if(p.is_admin) return true;
+    if((p.role||'').toLowerCase().includes('client')) return true;
+    const proj=(this.state.dbProjects||[]).find(x=>x.id===this.state.dbProjectId);
+    return !!(proj && proj.authoriser_id===p.id);
+  }
+  toggleVeto(pin){
+    const newV=!pin.vetoed;
+    const myName=(this.state.profile&&(this.state.profile.full_name||this.state.profile.email))||'You';
+    this.mutatePins(arr=>arr.map(p=> p.id===pin.id ? {...p, vetoed:newV, vetoedBy: newV?myName:''} : p));
+    if(this.isReal()) window.Censio.vetoComment(pin.id, newV).then(res=>{ if(res && res.error) this._toast('Could not veto: '+res.error.message); }).catch(()=>this._toast('Veto failed.'));
+    this._toast(newV?'Comment marked IGNORE — the Ivolve team will skip it.':'Veto removed.');
   }
 
   icons(){
@@ -1264,15 +1308,21 @@ class Component extends DCLogic {
     }));
 
     // right-panel list
+    const canVeto = this.canVetoNow();
     const listPins = tabPins.map(p=>{
       const [bg,fg] = tagColor(p.tag);
       const hidden = st.hidden[p.id];
       return {
         ...p, roleColor: p.roleColor, hasShape: !!p.shape, attachment: p.attachment||null,
-        canEdit: p.mine && !st.approved,
+        canEdit: p.mine && !st.approved && !p.vetoed,
         onEdit: (e)=>{ e.stopPropagation(); this.editComment(p); },
-        cardStyle: { background: p.flagged?'#241718':'#17171b', border:'1.5px solid '+(p.flagged?'#5a2420':'#26262b'), borderRadius:'14px', padding:'14px 15px', marginBottom:'10px', cursor:'pointer' },
-        numStyle: { flex:'none', width:'28px', height:'28px', borderRadius:'50%', background: p.flagged?'#dc2626':(p.mine?'#e2241c':p.roleColor), color:'#fff', fontSize:'14px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center' },
+        vetoed: !!p.vetoed, vetoedBy: p.vetoedBy||'',
+        textStyle: { fontSize:'15px', lineHeight:1.5, color: p.vetoed?'#8a8a90':'#d2d2d7', margin:0, fontWeight:500, textDecoration: p.vetoed?'line-through':'none' },
+        canVeto: canVeto && !p.mine,
+        vetoLabel: p.vetoed ? '↩ Remove IGNORE' : '⊘ Veto — mark IGNORE',
+        onVeto: (e)=>{ e.stopPropagation(); this.toggleVeto(p); },
+        cardStyle: { background: p.vetoed?'#161616':(p.flagged?'#241718':'#17171b'), border:'1.5px solid '+(p.vetoed?'#3a3a41':(p.flagged?'#5a2420':'#26262b')), borderRadius:'14px', padding:'14px 15px', marginBottom:'10px', cursor:'pointer', opacity: p.vetoed?0.72:1 },
+        numStyle: { flex:'none', width:'28px', height:'28px', borderRadius:'50%', background: p.vetoed?'#5e5e66':(p.flagged?'#dc2626':(p.mine?'#e2241c':p.roleColor)), color:'#fff', fontSize:'14px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center' },
         tagStyle: { fontSize:'12px', fontWeight:800, padding:'3px 9px', borderRadius:'6px', background:bg, color:fg },
         visLabel: hidden ? '○ Hidden on image — show' : '● Visible on image — hide',
         onSelect: ()=>{}, onToggleVis: (e)=>{ e.stopPropagation(); this.setState(s=>({hidden:{...s.hidden,[p.id]: !s.hidden[p.id]}})); }
@@ -1416,6 +1466,7 @@ class Component extends DCLogic {
 
       // reviewer header
       ...this.reviewerHeaderVals(),
+      ...this.viewSwitcherVals(),
       backToProjects: ()=>this.go('projects'),
       toggleBrief: ()=>this.setState(s=>({briefOpen:!s.briefOpen})),
       briefOpen: st.briefOpen,
@@ -2090,17 +2141,30 @@ class Component extends DCLogic {
     if(!st.membersProjectId) return { membersOpen:false };
     const people=st.dbPeople||[];
     const ids=st.membersIds||[];
+    const proj=(st.dbProjects||[]).find(p=>p.id===st.membersProjectId);
+    const authId=proj?proj.authoriser_id:null;
     const initialsOf=(n)=> (n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     return {
       membersOpen:true, membersProjectName: st.membersProjectName,
       membersCount: ids.length, membersEmpty: people.length===0,
       closeMembers: ()=>this.closeMembers(), stopProp:(e)=>e.stopPropagation(),
-      membersPeople: people.map(c=>{ const checked=ids.indexOf(c.id)!==-1; return {
+      membersPeople: people.map(c=>{ const checked=ids.indexOf(c.id)!==-1; const isAuth=c.id===authId; return {
         id:c.id, name:c.full_name||c.email||'—', role: c.is_admin?'Administrator':(c.role||(c.is_team?'Ivolve Team':'Reviewer')), initials:initialsOf(c.full_name||c.email), avatar:this.roleColor(c.role||(c.is_team?'team':'')), checked,
+        isAuthoriser:isAuth, authLabel: isAuth?'★ Authoriser':'Make authoriser',
+        onMakeAuthoriser:(e)=>{ e.stopPropagation(); this.setAuthoriser(st.membersProjectId, isAuth?null:c.id); },
         onToggle:()=>this.toggleMember(c.id),
-        rowStyle:{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'10px', cursor:'pointer', background: checked?'#1b1b1f':'transparent', border:'1px solid '+(checked?'#2e2e34':'transparent') },
-        boxStyle:{ width:'22px', height:'22px', borderRadius:'6px', border:'2px solid '+(checked?'#e2241c':'#3a3a41'), background:checked?'#e2241c':'transparent', color:'#fff', fontSize:'13px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', flex:'none' } }; }),
+        rowStyle:{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'10px', cursor:'pointer', background: checked?'#1b1b1f':'transparent', border:'1px solid '+(isAuth?'#5a4a1e':(checked?'#2e2e34':'transparent')) },
+        boxStyle:{ width:'22px', height:'22px', borderRadius:'6px', border:'2px solid '+(checked?'#e2241c':'#3a3a41'), background:checked?'#e2241c':'transparent', color:'#fff', fontSize:'13px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', flex:'none' },
+        authStyle:{ background:'none', border:'none', padding:0, fontSize:'12px', fontWeight:800, color: isAuth?'#c9a35b':'#6e6e75', cursor:'pointer', flex:'none' } }; }),
     };
+  }
+  setAuthoriser(projectId, profileId){
+    if(!this.isReal()) return;
+    window.Censio.setAuthoriser(projectId, profileId).then(res=>{
+      if(res && res.error){ this._toast('Could not set authoriser: '+res.error.message); return; }
+      this._toast(profileId?'Authoriser set — they can veto comments.':'Authoriser cleared.');
+      this.loadProjects();
+    }).catch(()=>this._toast('Failed to set authoriser.'));
   }
 
   projectAssets(id){
@@ -2235,6 +2299,24 @@ class Component extends DCLogic {
   }
 
   relTime(iso){ if(!iso) return ''; const d=new Date(iso); const diff=(Date.now()-d.getTime())/1000; if(diff<60) return 'just now'; if(diff<3600){ const m=Math.floor(diff/60); return m+' min ago'; } if(diff<86400){ const h=Math.floor(diff/3600); return h+' hr ago'; } if(diff<604800){ const dd=Math.floor(diff/86400); return dd+' day'+(dd===1?'':'s')+' ago'; } return d.toLocaleDateString(); }
+
+  viewSwitcherVals(){
+    const st=this.state;
+    const real=this.isReal();
+    const list = real ? (st.rvAssets||[]) : [];
+    const rvViews = list.map(a=>{ const active = st.rvAsset && a.id===st.rvAsset.id; return {
+      id:a.id, label:(a.type||'View')+(a.view_no?(' · View '+a.view_no):''), rev:'R'+(a.revision!=null?a.revision:'?'),
+      render:this.imgBg(a.id, this.renderA()), active,
+      onPick:()=>{ this.setState({rvSwitcherOpen:false}); if(!active) this.openReviewer(st.dbProjectId, a.id); },
+      style:{ display:'flex', alignItems:'center', gap:'10px', width:'100%', textAlign:'left', background: active?'#241413':'transparent', border:'1px solid '+(active?'#3a2420':'transparent'), padding:'9px 10px', borderRadius:'9px', cursor:'pointer', marginBottom:'2px' } }; });
+    return {
+      hasMultipleViews: list.length>1,
+      viewCount: list.length,
+      switcherOpen: st.rvSwitcherOpen,
+      toggleSwitcher: ()=>this.setState(s=>({ rvSwitcherOpen:!s.rvSwitcherOpen })),
+      rvViews,
+    };
+  }
 
   reviewerHeaderVals(){
     const st=this.state;
