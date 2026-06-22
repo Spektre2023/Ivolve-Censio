@@ -1,0 +1,15 @@
+# Cloudflare Pages headers
+# Always revalidate the app shell so users get new deploys immediately
+# (no-cache = "store but check with the server first", returns a fast 304 when unchanged).
+
+/
+  Cache-Control: no-cache, must-revalidate
+
+/index.html
+  Cache-Control: no-cache, must-revalidate
+
+/*.js
+  Cache-Control: no-cache, must-revalidate
+
+/*.dc.html
+  Cache-Control: no-cache, must-revalidate

@@ -75,6 +75,9 @@
             <a href="#" style="font-size: 15px; color: #e2241c; font-weight: 700; text-decoration: none;">Forgot password?</a>
           </div>
 
+          <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+            <div style="background: #2e1515; border: 1px solid #5a2420; color: #ef6b62; font-size: 14px; font-weight: 600; padding: 11px 14px; border-radius: 10px; margin-bottom: 14px; line-height: 1.4;">{{ loginError }}</div>
+          </sc-if>
           <button onClick="{{ signIn }}" style="width: 100%; height: 56px; background: #e2241c; color: #fff; border: none; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(226,36,28,0.3);" style-hover="background: #be1a14;">{{ loginButton }}</button>
 
           <button onClick="{{ toggleFirstTime }}" style="width: 100%; height: 50px; background: transparent; color: #a6a6ac; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px;">{{ firstTimeToggleLabel }}</button>
@@ -724,10 +727,13 @@
 
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px;">
             <div>
-              <h2 style="font-size: 21px; font-weight: 800; margin: 0;">Clients &amp; consultants</h2>
-              <div style="font-size: 14px; color: #7a7a82; font-weight: 600; margin-top: 4px;">Grouped by company — click a company to expand its people.</div>
+              <h2 style="font-size: 21px; font-weight: 800; margin: 0;">People &amp; access</h2>
+              <div style="font-size: 14px; color: #7a7a82; font-weight: 600; margin-top: 4px;">Ivolve team is listed first; clients &amp; consultants are grouped by company. Click to expand.</div>
             </div>
-            <button onClick="{{ addConsultant }}" style="height: 46px; padding: 0 18px; border-radius: 11px; border: none; background: #e2241c; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; flex: none;">＋ Add consultant</button>
+            <div style="display: flex; gap: 10px; flex: none;">
+              <button onClick="{{ addTeamMember }}" style="height: 46px; padding: 0 16px; border-radius: 11px; border: 1.5px solid #2e2e34; background: #1b1b1f; color: #f4f4f2; font-size: 15px; font-weight: 700; cursor: pointer;" style-hover="border-color: #e2241c;">＋ Add team member</button>
+              <button onClick="{{ addConsultant }}" style="height: 46px; padding: 0 18px; border-radius: 11px; border: none; background: #e2241c; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;">＋ Add client / consultant</button>
+            </div>
           </div>
           <div style="display: flex; flex-direction: column; gap: 12px;">
             <sc-for list="{{ companyGroups }}" as="co" hint-placeholder-count="4">
@@ -832,8 +838,17 @@ class Component extends DCLogic {
     dbPeople: null,          // admin: profiles[]
     dbProjectId: null,       // project context for reviewer/download
     joinedIds: [],           // team: project ids I've joined
+    loginError: '',
     busy: false,
   };
+
+  _friendlyAuthError(msg){
+    const m=(msg||'').toLowerCase();
+    if(m.includes('invalid login')) return 'Wrong email or password. Check both and try again.';
+    if(m.includes('email not confirmed')) return 'Your email isn’t confirmed yet. Check your inbox for the confirmation link (or ask an admin).';
+    if(m.includes('not found')) return 'No account found for that email.';
+    return 'Sign in failed: '+msg;
+  }
 
   componentDidMount() {
     const seed = [
@@ -848,6 +863,9 @@ class Component extends DCLogic {
     this.setState({ pins: seed });
     if(window.Censio){ this.setState({ connected:true }); }
     else { window.addEventListener('censio-ready', ()=>this.setState({ connected:true }), { once:true }); }
+    // NOTE: we intentionally do NOT restore a screen from localStorage — that
+    // could show an app screen before the session is verified. The session
+    // check below is the single source of truth for where a user lands.
     this.checkSession();
   }
 
@@ -859,13 +877,27 @@ class Component extends DCLogic {
     else { window.addEventListener('censio-ready', ()=>this.checkSession(), { once:true }); }
   }
   applyProfile(profile){
-    if(!profile){ this.setState({isTeam:false}); this.go('projects'); return; }
+    // No session / no user → make sure we're on the login screen (never demo).
+    if(!profile){ this.setState({ isTeam:false, profile:null, screen:'login' }); return; }
     const isTeam = !!profile.is_team, isAdmin = !!profile.is_admin;
     this.setState({ connected:true, isTeam, teamRole: isAdmin?'admin':'member', profile });
+    if(profile._missing){
+      this._toast('Signed in, but your profile isn’t set up yet. Ask an admin to finish your account.');
+    }
     this.go(isTeam ? (isAdmin ? 'admin' : 'upload') : 'projects');
   }
 
-  go(screen){ this.setState({ screen }); try { localStorage.setItem('iv_screen', screen); } catch(e){} this.loadFor(screen); }
+  go(screen){
+    if(screen==='signout'){ this.doSignOut(); return; }
+    this.setState({ screen });
+    this.loadFor(screen);
+  }
+
+  doSignOut(){
+    const finish = ()=>{ this.setState({ profile:null, isTeam:false, teamRole:'member', screen:'login', dbProjects:null, dbPeople:null, dbAssetsByProject:{}, rvComments:null, rvAsset:null }); };
+    if(window.Censio && window.Censio.signOut){ window.Censio.signOut().then(finish).catch(finish); }
+    else finish();
+  }
 
   // ---- per-screen data loaders (no-ops in offline preview) ----
   loadFor(screen){
@@ -996,6 +1028,11 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     const real = this.isReal();
+    // Hard guard: when the backend is connected but nobody is signed in, the
+    // ONLY screen allowed is login. This prevents any demo screen from showing
+    // after a failed/incomplete sign-in on the live site.
+    const authed = !!st.profile;
+    const screen = (st.connected && !authed) ? 'login' : st.screen;
     const pins = real ? (st.rvComments || []) : (st.pins || []);
     const myPins = pins.filter(p=>p.mine);
     const allPins = pins;
@@ -1115,15 +1152,15 @@ class Component extends DCLogic {
 
     return {
       // screens
-      isLogin: st.screen==='login', isProjects: st.screen==='projects', isReviewer: st.screen==='reviewer',
-      isUpload: st.screen==='upload', isAdmin: st.screen==='admin', isTeamLogin: st.screen==='teamlogin',
+      isLogin: screen==='login', isProjects: screen==='projects', isReviewer: screen==='reviewer',
+      isUpload: screen==='upload', isAdmin: screen==='admin', isTeamLogin: screen==='teamlogin',
       ...this.uploadVals(), ...this.adminVals(), ...this.dlVals(), ...this.icons(),
 
       // rail identity
       railRole: real ? (st.profile.role || (st.profile.is_admin?'Administrator':(st.profile.is_team?'Ivolve Team':'Reviewer'))) : (st.isTeam ? (st.teamRole==='admin' ? 'Administrator' : 'Ivolve Team') : 'Architect'),
       railName: real ? (st.profile.full_name || st.profile.email || 'You') : (st.isTeam ? (st.teamRole==='admin' ? 'Priya Nair' : 'Tom Reeves') : 'David Chen'),
       railIsTeam: st.isTeam, railIsAdmin: st.isTeam && st.teamRole==='admin',
-      isTeamProjects: st.screen==='projects' && st.isTeam, isConsultantProjects: st.screen==='projects' && !st.isTeam,
+      isTeamProjects: screen==='projects' && st.isTeam, isConsultantProjects: screen==='projects' && !st.isTeam,
       ...this.teamProjectsVals(),
 
       // login
@@ -1135,23 +1172,29 @@ class Component extends DCLogic {
       passwordLabel: st.firstTime ? 'Create password' : 'Password',
       loginButton: st.firstTime ? 'Create password & continue' : 'Sign in',
       firstTimeToggleLabel: st.firstTime ? '← Back to sign in' : 'First time here? Set up your password',
+      loginError: st.loginError,
       signIn: async ()=>{
         const email = this._loginEmail ? this._loginEmail.value.trim() : '';
         const pw = this._loginPw ? this._loginPw.value : '';
-        if(!email || !pw){ this._toast('Enter your email and password.'); return; }
-        if(!window.Censio){ this._toast('Still connecting to the server — try again in a moment.'); return; }
-        if(st.firstTime){
-          const confirm = this._loginPwConfirm ? this._loginPwConfirm.value : '';
-          if(confirm && pw!==confirm){ this._toast('The two passwords don\u2019t match.'); return; }
-          const { error } = await window.Censio.setFirstPassword(pw);
-          if(error){ this._toast('Could not set password: '+error.message); return; }
-          this._toast('Password set ✓'); const p1 = await window.Censio.currentProfile(); this.applyProfile(p1); return;
-        }
-        this._toast('Signing in…');
-        const { error } = await window.Censio.signIn(email, pw);
-        if(error){ this._toast('Sign in failed: '+error.message); return; }
-        const profile = await window.Censio.currentProfile();
-        this.applyProfile(profile);
+        this.setState({ loginError:'' });
+        if(!email || !pw){ this.setState({ loginError:'Enter your email and password.' }); return; }
+        if(!window.Censio){ this.setState({ loginError:'Still connecting to the server — wait a moment and try again.' }); return; }
+        try {
+          if(st.firstTime){
+            const confirm = this._loginPwConfirm ? this._loginPwConfirm.value : '';
+            if(confirm && pw!==confirm){ this.setState({ loginError:'The two passwords don’t match.' }); return; }
+            const { error } = await window.Censio.setFirstPassword(pw);
+            if(error){ this.setState({ loginError:'Could not set password: '+error.message }); return; }
+            this._toast('Password set ✓');
+            const p1 = await window.Censio.currentProfile(); this.applyProfile(p1); return;
+          }
+          this._toast('Signing in…');
+          const { error } = await window.Censio.signIn(email, pw);
+          if(error){ this.setState({ loginError: this._friendlyAuthError(error.message) }); return; }
+          const profile = await window.Censio.currentProfile();
+          if(!profile){ this.setState({ loginError:'Signed in, but could not load your account. Try again.' }); return; }
+          this.applyProfile(profile);
+        } catch(e){ this.setState({ loginError:'Something went wrong signing in: '+(e&&e.message||e) }); }
       },
       emailRef: (el)=>{ this._loginEmail = el; },
       pwRef: (el)=>{ this._loginPw = el; },
@@ -1599,6 +1642,7 @@ class Component extends DCLogic {
       onAdminSearch: (e)=>this.setState({adminSearch: e.target.value}),
       companyGroups,
       addProject: ()=>this._toast('New project form would open here.'),
+      addTeamMember: ()=>this._toast('Add team member form would open here.'),
       addConsultant: ()=>this._toast('Add consultant form would open here.') };
   }
 
@@ -1617,27 +1661,35 @@ class Component extends DCLogic {
 
     const conStatusStyle=(s)=>({ fontSize:'13px', fontWeight:800, color: s==='Active'?'#33a96e':'#c9a35b', background: s==='Active'?'#16271f':'#2a2417', padding:'4px 10px', borderRadius:'6px' });
     const people=st.dbPeople||[];
-    const byCo={};
-    people.forEach(p=>{ const co=(p.companies&&p.companies.name)||'Unaffiliated'; (byCo[co]=byCo[co]||[]).push(p); });
     const initialsOf=(n)=> (n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const companyGroups=Object.keys(byCo).sort((a,b)=>a.localeCompare(b)).map(co=>{
-      const mem=byCo[co];
-      const expanded=!!st.expandedCompanies[co];
-      const roles=[...new Set(mem.map(m=>m.role).filter(Boolean))];
-      const badge=co.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const roleOf=(c)=> c.is_admin ? 'Administrator' : (c.role || (c.is_team?'Ivolve Team':'Reviewer'));
+    const mkMember=(c)=>({ name:c.full_name||c.email||'—', role:roleOf(c), email:c.email||'', status:'Active', initials:initialsOf(c.full_name||c.email), avatar:this.roleColor(c.role||(c.is_team?'team':'')),
+      statusStyle:conStatusStyle('Active'), pending:false,
+      onInvite:(e)=>{ e.stopPropagation(); this.adminReset(c.email); },
+      onReset:(e)=>{ e.stopPropagation(); this.adminReset(c.email); } });
+    const mkGroup=(key, name, badge, mem)=>{
+      const expanded=!!st.expandedCompanies[key];
+      const roles=[...new Set(mem.map(m=>roleOf(m)))];
       return {
-        name:co, badge, summary: roles.join(' · ')||'Reviewers',
+        name, badge, summary: roles.join(' · ')||'Reviewers',
         countLabel: mem.length+(mem.length===1?' person':' people'),
         statusLabel:'All active',
         statusStyle:{ fontSize:'13px', fontWeight:800, color:'#33a96e', background:'#16271f', padding:'4px 10px', borderRadius:'6px', flex:'none' },
         chevronStyle:{ display:'inline-block', width:'16px', color:'#7a7a82', fontSize:'15px', transition:'transform .15s ease', transform: expanded?'rotate(90deg)':'none' },
         expanded,
-        onToggle: ()=>this.setState(s=>({ expandedCompanies:{ ...s.expandedCompanies, [co]: !s.expandedCompanies[co] } })),
-        members: mem.map(c=>({ name:c.full_name||c.email||'—', role:c.role||(c.is_team?'Ivolve Team':'Reviewer'), email:c.email||'', status:'Active', initials:initialsOf(c.full_name||c.email), avatar:this.roleColor(c.role||''),
-          statusStyle:conStatusStyle('Active'), pending:false,
-          onInvite:(e)=>{ e.stopPropagation(); this.adminReset(c.email); },
-          onReset:(e)=>{ e.stopPropagation(); this.adminReset(c.email); } }))
+        onToggle: ()=>this.setState(s=>({ expandedCompanies:{ ...s.expandedCompanies, [key]: !s.expandedCompanies[key] } })),
+        members: mem.map(mkMember),
       };
+    };
+    // Ivolve team in its own group at the top; clients/consultants grouped by company.
+    const teamPeople = people.filter(p=>p.is_team);
+    const clientPeople = people.filter(p=>!p.is_team);
+    const byCo={};
+    clientPeople.forEach(p=>{ const co=(p.companies&&p.companies.name)||'Unaffiliated'; (byCo[co]=byCo[co]||[]).push(p); });
+    const companyGroups=[];
+    if(teamPeople.length) companyGroups.push(mkGroup('__team','Ivolve Studios — Team','IV',teamPeople));
+    Object.keys(byCo).sort((a,b)=>a.localeCompare(b)).forEach(co=>{
+      companyGroups.push(mkGroup(co, co, co.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(), byCo[co]));
     });
     return {
       activeProjects, inactiveProjects,
@@ -1646,7 +1698,8 @@ class Component extends DCLogic {
       onAdminSearch:(e)=>this.setState({adminSearch:e.target.value}),
       companyGroups,
       addProject: ()=>this.adminAddProject(),
-      addConsultant: ()=>this.adminAddConsultant(),
+      addTeamMember: ()=>this.adminInvite(true),
+      addConsultant: ()=>this.adminInvite(false),
     };
   }
   adminReset(email){
@@ -1662,14 +1715,14 @@ class Component extends DCLogic {
       this._toast('Project “'+name+'” created.'); this.loadProjects();
     }).catch(()=>this._toast('Create failed.'));
   }
-  adminAddConsultant(){
-    const full_name=window.prompt('Full name:'); if(!full_name) return;
+  adminInvite(isTeam){
+    const full_name=window.prompt(isTeam?'Team member full name:':'Full name:'); if(!full_name) return;
     const email=window.prompt('Email address:'); if(!email) return;
-    const role=window.prompt('Role (e.g. Architect, Client, Interior Designer):')||'';
-    const company=window.prompt('Company name:')||'';
+    const role=window.prompt(isTeam?'Role (e.g. Administrator, Artist, Project Lead):':'Role (e.g. Architect, Client, Interior Designer):')||'';
+    const company=isTeam ? 'Ivolve Studios' : (window.prompt('Company name:')||'');
     this._toast('Inviting '+full_name+'…');
-    window.Censio.inviteConsultant({ full_name, email, role, company }).then(r=>{
-      if(r && r.ok){ this._toast('Invite sent to '+email+' with a secure sign-in link.'); this.loadPeople(); }
+    window.Censio.inviteConsultant({ full_name, email, role, company, is_team: !!isTeam }).then(r=>{
+      if(r && r.ok){ this._toast((isTeam?'Team member':'Consultant')+' invited — '+email+' will get a secure sign-in link.'); this.loadPeople(); }
       else { this._toast('Could not invite: '+((r&&r.error)||'unknown error')); }
     }).catch(()=>this._toast('Invite failed — is the Worker deployed?'));
   }

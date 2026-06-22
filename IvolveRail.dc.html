@@ -31,9 +31,13 @@
     </button>
   </sc-if>
 
-  <div style="margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 7px;">
+  <div style="margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 9px;">
     <div style="width: 44px; height: 44px; border-radius: 50%; background: #1f1f23; border: 1px solid #34343a; color: #f4f4f2; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center;">{{ initials }}</div>
     <div style="font-size: 10px; color: #6e6e75; font-weight: 700; text-align: center; max-width: 76px; line-height: 1.25;">{{ role }}</div>
+    <button onClick="{{ goSignout }}" title="Sign out" style="display: flex; flex-direction: column; align-items: center; gap: 3px; background: transparent; border: none; color: #7a7a82; cursor: pointer; padding: 6px 4px; border-radius: 10px;" style-hover="color: #e2241c;">
+      {{ icSignout }}
+      <span style="font-size: 10px; font-weight: 700;">Sign out</span>
+    </button>
   </div>
 </div>
 </x-dc>
@@ -54,7 +58,8 @@ class Component extends DCLogic {
       icProjects: svg([P('M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z')]),
       icUpload: svg([P('M12 15V4M8 8l4-4 4 4M5 20h14')]),
       icAdmin: svg([C(12,12,3.2), P('M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1')]),
-      goProjects: ()=>nav('projects'), goUpload: ()=>nav('upload'), goAdmin: ()=>nav('admin'),
+      icSignout: svg([P('M15 4h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3'), P('M10 17l-5-5 5-5'), P('M5 12h11')]),
+      goProjects: ()=>nav('projects'), goUpload: ()=>nav('upload'), goAdmin: ()=>nav('admin'), goSignout: ()=>nav('signout'),
       projectsStyle: btn(active==='projects'), uploadStyle: btn(active==='upload'), adminStyle: btn(active==='admin'),
       showUpload: isTeam, showAdmin: isAdmin, initials, role: this.props.role || 'Architect',
     };

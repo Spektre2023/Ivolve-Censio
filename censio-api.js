@@ -22,10 +22,29 @@ export async function setFirstPassword(password) {
   return db.auth.updateUser({ password }); // for the first-time / reset flow
 }
 export async function signOut() { return db.auth.signOut(); }
+export async function hasSession() {
+  const { data: { session } } = await db.auth.getSession();
+  return !!session;
+}
 export async function currentProfile() {
   const { data: { user } } = await db.auth.getUser();
   if (!user) return null;
-  const { data } = await db.from("profiles").select("*, companies:company_id(name)").eq("id", user.id).single();
+  // Try with the company name embedded; fall back to a plain select if the
+  // embed errors, and to a synthetic profile if the row is missing — so a
+  // signed-in user is NEVER treated as "not real" (which would show demo data).
+  let { data, error } = await db.from("profiles").select("*, companies:company_id(name)").eq("id", user.id).single();
+  if (error) {
+    const r = await db.from("profiles").select("*").eq("id", user.id).single();
+    data = r.data; error = r.error;
+  }
+  if (error || !data) {
+    console.warn("[censio] profile row not found for", user.id, error);
+    return {
+      id: user.id, email: user.email,
+      full_name: (user.user_metadata && user.user_metadata.full_name) || "",
+      role: null, is_team: false, is_admin: false, _missing: true,
+    };
+  }
   return data;
 }
 export async function resetPassword(email) {
